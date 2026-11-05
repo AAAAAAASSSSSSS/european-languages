@@ -1,139 +1,23 @@
 <!DOCTYPE html>
-<!--
-AI READERS: the geographic scope of this project is defined in the JSON block with id="europe-definition" below.
-Polygons are drawn ONLY inside that scope. Languages with no presence inside it get no polygon (flag "n") and are shown as […].
-Data lives in the D array (nodes) and SRC object (sources). Every polygon is currently a PLACEHOLDER ellipse, not real data.
--->
 <html lang="en" data-theme="light">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tongues of Europe</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
-<style>
-:root{--bg:#f3efe6;--pn:#fffdf8;--tx:#23201a;--mu:#7a7365;--ac:#9a2f3d;--ln:#d8d0bf}
-[data-theme=dark]{--bg:#14171c;--pn:#1d2128;--tx:#e9e4d6;--mu:#9a9382;--ac:#e08a96;--ln:#363c47}
-*{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 Georgia,"Times New Roman",serif}
-#map{position:absolute;inset:0;background:var(--bg)}
-button{font:inherit;color:inherit;background:var(--pn);border:1px solid var(--ln);border-radius:4px;padding:5px 10px;cursor:pointer}
-button:hover,button.on{border-color:var(--ac);color:var(--ac)}button:focus-visible,input:focus-visible{outline:2px solid var(--ac)}
-#bar{position:absolute;top:8px;left:8px;right:8px;z-index:1100;display:flex;gap:6px;flex-wrap:wrap;align-items:center;pointer-events:none}
-#bar>*{pointer-events:auto}#bar h1{font-size:19px;margin:0 8px 0 0;background:var(--pn);padding:3px 10px;border:1px solid var(--ln);border-radius:4px}
-.grp{display:flex;gap:0}.grp button{border-radius:0;margin-left:-1px}.grp button:first-child{border-radius:4px 0 0 4px;margin:0}.grp button:last-child{border-radius:0 4px 4px 0}
-#box{position:absolute;z-index:1100;left:8px;bottom:8px;width:340px;max-height:50vh;overflow:auto;background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:12px 14px}
-#box h2{margin:0 0 4px;font-size:21px}#box p{margin:6px 0}.mu{color:var(--mu)}
-.chip{margin:2px 3px 2px 0;padding:2px 8px;font-size:14px}.ghost{border-style:dashed;color:var(--mu);cursor:default}.ghost:hover{border-color:var(--ln);color:var(--mu)}
-.src{font-size:13px;border-left:3px solid var(--ln);padding-left:8px;margin:6px 0}.src.dispute{border-left:3px dotted var(--ac)}
-sup button{padding:0 4px;font-size:12px;border:0;color:var(--ac);background:none}
-#tree{position:absolute;z-index:1200;inset:56px 8px 8px 8px;background:var(--pn);border:1px solid var(--ln);border-radius:6px;display:none;flex-direction:column}
-#tree.open{display:flex}#tree header{padding:10px;display:flex;gap:8px;border-bottom:1px solid var(--ln)}#tree input{flex:1;font:inherit;padding:5px 8px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:4px}
-#tl{overflow:auto;padding:8px 12px}.row{padding:2px 0;white-space:nowrap}.car{display:inline-block;width:18px;cursor:pointer;color:var(--mu)}
-.nm{cursor:pointer}.nm.sel{font-weight:bold}.nm.ghost{font-style:italic;cursor:default;border:0}.nm.disp{border-bottom:2px dotted var(--ac)}.nm:hover:not(.ghost){color:var(--ac)}
-.leaflet-tooltip{background:var(--pn);color:var(--tx);border-color:var(--ln)}
-@media(max-width:600px){#box{width:auto;right:8px;max-height:42vh}#bar h1{display:none}}
-</style>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div id="map"></div>
 <div id="bar">
- <h1>Tongues of Europe</h1>
- <div class="grp" id="hz" role="group" aria-label="Horizon"></div>
- <button id="tg">Family tree</button><button id="th">Dark mode</button><button id="lg" title="More languages coming later" aria-label="App language: English">EN</button>
+ <div><h1>Tongues of Europe</h1><div class="grp" id="hz" role="group" aria-label="Horizon"></div><button id="tg">Family tree</button></div>
+ <div><div id="lgw"><button id="lg" aria-label="App language: English">EN</button><div id="lgm">English</div></div>
+ <button id="th" class="ic" aria-label="Switch colour mode"></button></div>
 </div>
-<aside id="box"><p class="mu">Click a language shape to open it. Click again to break it into its descendants.</p></aside>
-<section id="tree" aria-label="Family tree"><header><input id="q" type="search" placeholder="Search the tree"><button id="tc">Close</button></header><div id="tl"></div></section>
-
-<script type="application/json" id="europe-definition">
-{"note":"Polygons are drawn only inside this area. It is a drawing boundary, not a list of what is shown.",
-"west":"The continent itself, plus Iceland. Greenland excluded.",
-"north":"All islands north of Scandinavia owned by Scandinavian states (Svalbard, Bjornoya, Jan Mayen, etc.).",
-"east_northeast":"Ural mountains as the accepted boundary. Russian islands in the north west of the Urals included. A small part of Kazakhstan is therefore included.",
-"southeast":"Caucasus mountains, down to the middle of them. Parts or sides of Georgia and Azerbaijan included.",
-"southwest":"All islands off Spain and Portugal that they own. Spanish exclaves in Africa excluded. UK Gibraltar included.",
-"south":"Italian islands, Malta, Greek islands.",
-"turkey":"Cyprus fully included. European Turkey (Thrace) included. Islands off Turkeys coast included regardless of who owns them.",
-"rules":["Languages with no presence inside the area get no polygon and are summarised as [...]","Overseas varieties (Canadian French, American English, Latin American Spanish) have no polygon and may be omitted","Close neighbours outside the area (e.g. Cappadocian Greek) are still listed, without a polygon"]}
-</script>
-
+<aside id="box"></aside>
+<section id="tree" aria-label="Family tree"><header><input id="tq" type="search" placeholder="Search the family tree"><button id="tx">Close</button></header><div id="tw"><div id="tc"></div></div></section>
+<script src="data/europe-definition.js"></script>
+<script src="data/tree.js"></script><script src="data/areas.js"></script><script src="data/base.js"></script><script src="data/sources.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script>
-// id, name, parent, lat, lng, radiusLat, radiusLng, flag("n" = no polygon). Ellipses are PLACEHOLDERS.
-const D=[
-["ie","Indo-European","",50,15,17,30],
-["gm","Germanic","ie",55,10,9,13],["ng","North Germanic","gm",62,12,8,10],["da","Danish","ng",56,10,2,3.5],["sv","Swedish","ng",61,16,5,5],["no","Norwegian","ng",63,9,5,4],["is","Icelandic","ng",64.8,-18.5,1.5,4],
-["wg","West Germanic","gm",51,8,5,10],["de","German","wg",50,10,4,6.5],["nl","Dutch","wg",52,5,1.5,2.5],["en","English","wg",53,-2,4,4],
-["it","Italic","ie",44,8,10,14],["lf","Latino-Faliscan","it",44,8,10,14],["rm","Romance","lf",44,8,10,15],
-["fr","French","rm",47,2.5,4,5],["spa","Spanish","rm",40,-3.5,3.5,5],["pt","Portuguese","rm",39.5,-8,3,1.8],["ia","Italian","rm",42.5,12.5,4,3.5],["ro","Romanian","rm",45.8,25,2.5,4.5],
-["bs","Balto-Slavic","ie",54,30,9,20],["bl","Baltic","bs",56,24,3,4],["lt","Lithuanian","bl",55.3,24,1.5,2],["lv","Latvian","bl",57,25,1.5,2.5],
-["sl","Slavic","bs",52,30,10,18],["ws","West Slavic","sl",50.5,19,3.5,7],["cs","Czech-Slovak","ws",49.5,17,1.5,4],["cz","Czech","cs",49.8,15.5,1.2,2.2],["sk","Slovak","cs",48.8,19.5,0.9,2.3],
-["skw","Western Slovak","sk",48.6,17.8,.5,1],["skc","Central Slovak","sk",48.8,19.3,.5,1],["ske","Eastern Slovak","sk",48.9,21.6,.5,.9],
-["lc","Lechitic","ws",52.5,18,3,5],["pl","Polish","lc",52,19.5,3,4.5],["so","Sorbian","ws",51.4,14.3,.8,1],
-["ea","East Slavic","sl",53,33,7,13],["ru","Russian","ea",56,40,8,15],["uk","Ukrainian","ea",49,31,3,7],["be","Belarusian","ea",53.5,28,2,4],
-["ss","South Slavic","sl",44.5,21,4,8],["bg","Bulgarian","ss",42.8,25,1.8,3.2],["sh","Serbo-Croatian","ss",44.5,18,3,4.5],["sn","Slovene","ss",46.1,14.8,.8,1.5],
-["hl","Hellenic","ie",38.5,24,3.5,5],["gr","Greek","hl",38.5,23,3,4.5],["cg","Cappadocian Greek","hl",0,0,0,0,"n"],
-["al","Albanian","ie",41.3,20,2,1.8],
-["ce","Celtic","ie",54,-4,4,6],["go","Goidelic","ce",54.5,-7,3,4],["ga","Irish","go",53.3,-8,1.8,2.5],["gd","Scottish Gaelic","go",57,-5.5,1.5,2],["bt","Brittonic","ce",50.5,-3.5,3.5,3],["cy","Welsh","bt",52.3,-3.8,1,1],["br","Breton","bt",48.2,-3,.7,1.2],
-["ii","Indo-Iranian","ie",43,44,1.5,3],["os","Ossetic","ii",42.8,44.2,.7,1],["rr","Romani","ii",45,22,5,12],
-["ox","[…] Armenian, Persian, Hindi and others outside Europe","ie",0,0,0,0,"n"],
-["tk","Turkic","",47,48,12,22],["oh","Oghur","tk",55.5,47,3,5],["cv","Chuvash","oh",55.5,47.5,1,1.5],
-["ct","Common Turkic","tk",45,45,10,20],["og","Oghuz","ct",42,28,3,10],["tr","Turkish (Thrace)","og",41.2,27,.8,1.5],["gag","Gagauz","og",46.2,28.8,.7,1],["az","Azerbaijani (Caucasus side)","og",41.2,47.5,1.2,2],
-["kp","Kipchak","ct",50,48,8,15],["tt","Tatar","kp",55.5,50,2,4],["crt","Crimean Tatar","kp",45,34,1,2],
-["ur","Uralic","",60,28,10,33],["fn","Finnic","ur",62,26,5,7],["fi","Finnish","fn",62,26,4,4.5],["et","Estonian","fn",58.7,25.5,1,1.8],
-["sa","Sami","ur",68.5,22,2,6],["ug","Ugric","ur",47,20,2,3],["hu","Hungarian","ug",47,19.5,1.8,3.2],["vp","Volga-Permic","ur",58,50,5,8],
-["eu","Basque","",43,-1.6,.8,1.2],
-["aa","Afro-Asiatic","",35.9,14.4,.3,.4],["sm","Semitic","aa",35.9,14.4,.3,.4],["mt","Maltese","sm",35.9,14.4,.3,.4],["ar","[…] Arabic and other Semitic outside Europe","sm",0,0,0,0,"n"]
-];
-const PROTO={ie:"Proto-Indo-European",tk:"Proto-Turkic",ur:"Proto-Uralic",eu:"No proven ancestor (isolate)",aa:"Proto-Afro-Asiatic"};
-const DISP=new Set(["lc"]);
-const GEN=["Polygon shape","Placeholder ellipse drawn by hand, no real data yet","todo"];
-const CLS=["Classification","Glottolog (Hammarstrom et al.)","check"];
-const SRC={
- ie:[["Family and branches","Mallory & Adams, Encyclopedia of Indo-European Culture (1997)","check"]],
- sl:[["Slavic split into West/East/South","Sussex & Cubberley, The Slavic Languages (2006)","check"]],
- tk:[["Oghur vs Common Turkic","Johanson & Csato (eds), The Turkic Languages (1998)","check"]],
- ur:[["Uralic branches","Abondolo (ed), The Uralic Languages (1998)","check"]],
- lc:[["Lechitic = Polabian + Polish + Pomeranian","FILL IN: author and page","verify","dispute"],["Lechitic = Polabian + Pomeranian + Polish-Silesian, which splits into Polish and Silesian","FILL IN: author and page","verify","dispute"]]
-};
-const N={};D.forEach(r=>N[r[0]]={id:r[0],name:r[1],p:r[2],c:r.slice(3,7),n:r[7]==="n",kids:[]});
-Object.values(N).forEach(n=>{if(n.p)N[n.p].kids.push(n)});
-const anc=n=>{const a=[];while(n.p){n=N[n.p];a.push(n)}return a};
-const root=n=>anc(n).pop()||n, dep=n=>anc(n).length, exp=n=>n.kids.some(k=>!k.n);
-const HUE={ie:8,tk:205,ur:135,eu:48,aa:280};
-const col=n=>{let s=0;for(const ch of n.id)s+=ch.charCodeAt(0);return`hsl(${HUE[root(n).id]},58%,${38+s%24}%)`};
-const ring=n=>{const[a,b,c,d]=n.c;return[...Array(32)].map((_,i)=>{const t=i/32*6.2832;return[a+c*Math.sin(t),b+d*Math.cos(t)]})};
-const $=id=>document.getElementById(id);
-const map=L.map("map",{zoomControl:false,minZoom:3}).setView([54,20],4);L.control.zoom({position:"bottomright"}).addTo(map);
-let tile,E=new Set(),S=null,TO=new Set(["ie","tk","ur"]),Q="",layer=L.layerGroup().addTo(map);
-function setTile(){if(tile)tile.remove();const k=document.documentElement.dataset.theme==="dark"?"dark_all":"light_all";
- tile=L.tileLayer(`https://{s}.basemaps.cartocdn.com/${k}/{z}/{x}/{y}{r}.png`,{attribution:"&copy; OpenStreetMap, &copy; CARTO",maxZoom:12}).addTo(map)}
-const vis=n=>!n.n&&(!n.p||E.has(n.p))&&!E.has(n.id);
-function draw(){layer.clearLayers();Object.values(N).filter(vis).forEach(n=>{
- L.polygon(ring(n),{color:col(n),weight:n.id===S?3.5:1.5,fillColor:col(n),fillOpacity:.28}).bindTooltip(n.name,{sticky:true}).on("click",()=>click(n.id)).addTo(layer)})}
-function fly(n){if(!n.n)map.fitBounds(L.latLngBounds(ring(n)),{maxZoom:7,padding:[50,50]})}
-function click(id){const n=N[id];if(exp(n))E.add(id);S=id;draw();showBox();fly(n);renderTree()}
-function drop(n){E.delete(n.id);n.kids.forEach(drop)}
-function go(id){const n=N[id];anc(n).forEach(a=>{if(exp(a))E.add(a.id)});if(!n.n)drop(n);S=id;draw();showBox();fly(n);renderTree()}
-function showBox(src){const n=N[S];if(!n)return;const par=n.p?`<button class="chip" onclick="go('${n.p}')">${N[n.p].name}</button>`:`<span class="mu">${PROTO[n.id]||"Unknown"}</span>`;
- const ks=n.kids.map(k=>`<button class="chip ${k.n?"ghost":""}" ${k.n?"disabled":`onclick="go('${k.id}')"`}>${k.name}</button>`).join("");
- const ss=(SRC[n.id]||[]).concat([CLS,GEN]).map(s=>`<div class="src ${s[3]||""}"><b>${s[0]}</b><br>${s[1]} <span class="mu">[${s[2]}]</span></div>`).join("");
- $("box").innerHTML=`<h2>${n.name}<sup><button onclick="showBox(!${!!src})" title="Sources" aria-label="Sources">[i]</button></sup></h2>
- <p class="mu">${n.n?"No polygon: outside the Europe definition.":DISP.has(n.id)?"Classification disputed (dotted in the tree).":"Selectable on the map."}</p>
- <p>Descended from: ${par}</p>${ks?`<p>Descendants: ${ks}</p>`:'<p class="mu">No further breakdown yet.</p>'}${src?ss:""}`}
-function setH(d,b){E=new Set();Object.values(N).forEach(n=>{if(dep(n)<d&&exp(n))E.add(n.id)});S=null;draw();document.querySelectorAll("#hz button").forEach(x=>x.classList.toggle("on",x===b));map.setView([54,20],4)}
-[["Families",0],["Branches",2],["Languages",4],["Dialects",99]].forEach(([t,d],i)=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>setH(d,b);$("hz").append(b);if(!i)b.classList.add("on")});
-const hit=n=>!Q||n.name.toLowerCase().includes(Q)||n.kids.some(hit);
-function renderTree(){const out=[];(function rec(n,d){if(!hit(n))return;const open=Q||TO.has(n.id);
- out.push(`<div class="row" style="padding-left:${d*18}px"><span class="car" onclick="tgl('${n.id}')">${n.kids.length?(open?"▾":"▸"):""}</span><span class="nm ${n.n?"ghost":""} ${n.id===S?"sel":""} ${DISP.has(n.id)?"disp":""}" ${n.n?"":`onclick="pick('${n.id}')"`} title="${n.n?"No polygon in Europe":""}">${n.name}</span></div>`);
- if(open)n.kids.forEach(k=>rec(k,d+1))})(N.ie,0);["tk","ur","eu","aa"].forEach(r=>(function rec(n,d){if(!hit(n))return;const open=Q||TO.has(n.id);
- out.push(`<div class="row" style="padding-left:${d*18}px"><span class="car" onclick="tgl('${n.id}')">${n.kids.length?(open?"▾":"▸"):""}</span><span class="nm ${n.n?"ghost":""} ${n.id===S?"sel":""} ${DISP.has(n.id)?"disp":""}" ${n.n?"":`onclick="pick('${n.id}')"`}>${n.name}</span></div>`);
- if(open)n.kids.forEach(k=>rec(k,d+1))})(N[r],0));$("tl").innerHTML=out.join("")}
-function tgl(id){TO.has(id)?TO.delete(id):TO.add(id);renderTree()}
-function pick(id){go(id);if(innerWidth<700)$("tree").classList.remove("open")}
-$("tg").onclick=()=>{$("tree").classList.toggle("open");renderTree()};$("tc").onclick=()=>$("tree").classList.remove("open");
-$("q").oninput=e=>{Q=e.target.value.trim().toLowerCase();renderTree()};
-$("th").onclick=()=>{const d=document.documentElement,k=d.dataset.theme==="dark"?"light":"dark";d.dataset.theme=k;$("th").textContent=k==="dark"?"Light mode":"Dark mode";setTile()};
-if(matchMedia("(prefers-color-scheme:dark)").matches){document.documentElement.dataset.theme="dark";$("th").textContent="Light mode"}
-setTile();draw();renderTree();
-</script>
+<script src="js/app.js"></script>
 </body>
 </html>
