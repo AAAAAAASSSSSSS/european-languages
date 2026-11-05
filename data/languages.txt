@@ -1,0 +1,422 @@
+# SOURCE OF TRUTH. id|name|parent|area|flags|note   flags: L language, D dialect, x extinct, d disputed, s scattered/non-territorial, n no polygon (outside Europe definition)
+# area terms (union, separated by ;): ISO3 = whole country | ISO3:Region|Region = admin-1 regions | ISO3:!Region = all but | any of those + @west,south,east,north = clipped to box
+# A node without area gets the union of its children. Roots have the ancestor in the note field.
+ie|Indo-European||||Proto-Indo-European
+ana|Anatolian|ie||xn|Hittite, Luwian, Lydian, Lycian (Anatolia)
+toc|Tocharian|ie||xn|Tarim Basin
+arm|Armenian|ie||Ln|outside the Europe definition
+phr|Phrygian|ie||xn
+gm|Germanic|ie
+ng|North Germanic|gm
+esc|East Scandinavian|ng
+da|Danish|esc|DNK|L
+daj|Jutlandic|da|DNK@8,54.8,10.6,57.8|D
+dai|Insular Danish|da|DNK@10.6,54.5,12.7,56.2|D
+dab|Bornholmsk|da|DNK@14.6,54.95,15.2,55.3|D
+sv|Swedish|esc|SWE;ALD;FIN:Uusimaa|Finland Proper|Ostrobothnia|L
+svn|Norrland Swedish|sv|SWE@11,62.4,24,69.2|D
+svs|Svealand Swedish|sv|SWE@11,59,19,62.4|D
+svg|Götaland Swedish|sv|SWE@11,55.3,17,59|D
+svk|Scanian|sv|SWE:Skåne|D
+svo|Gutnish|sv|SWE:Gotland|D
+svf|Finland Swedish|sv|FIN:Uusimaa|Finland Proper|Ostrobothnia;ALD|D
+elf|Elfdalian|esc|SWE:Dalarna@13.0,60.9,15.0,61.5|Ld
+wsc|West Scandinavian|ng
+no|Norwegian|wsc|NOR|L
+non|Northern Norwegian|no|NOR:Finnmark|Troms|Nordland|Svalbard|D
+not|Trøndersk|no|NOR:Sør-Trøndelag|Nord-Trøndelag|D
+now|Western Norwegian|no|NOR:Rogaland|Hordaland|Sogn og Fjordane|Møre og Romsdal|Vest-Agder|D
+noe|Eastern Norwegian|no|NOR:Oslo|Akershus|Østfold|Buskerud|Hedmark|Oppland|Vestfold|Telemark|Aust-Agder|D
+is|Icelandic|wsc|ISL|L
+fo|Faroese|wsc|FRO|L
+nrn|Norn|wsc||Lxn|Orkney and Shetland
+egm|East Germanic|gm||x|Gothic, Vandalic, Burgundian
+got|Gothic|egm||Lxn
+wg|West Germanic|gm
+ang|Anglic|wg
+en|English|ang|GBR;IRL;GIB;IMN;GGY;JEY|L
+enn|Northern English|en|GBR@-3.3,53.2,-0.5,55.8|D
+enm|Midlands and East Anglian English|en|GBR@-3.0,51.7,1.8,53.2|D
+ens|Southern English|en|GBR@-5.8,50.0,1.8,51.7|D
+enw|West Country English|en|GBR:Cornwall|Devon|Somerset|Dorset|D
+eni|Hiberno-English|en|IRL|D
+sco|Scots|ang|GBR@-6.4,54.9,-0.7,60.9;GBR:Antrim|Down|Ards|North Down|Larne|Moyle|Ballymoney|Coleraine|Carrickfergus|Newtownabbey|Ballymena|Limavady|Ld
+scoi|Insular Scots|sco|GBR:Orkney|Shetland Islands|D
+scon|Northern Scots|sco|GBR:Aberdeen|Aberdeenshire|Moray|Angus|D
+scoc|Central Scots|sco|GBR:Fife|Glasgow|Edinburgh|West Lothian|Midlothian|East Lothian|Falkirk|Perthshire and Kinross|North Lanarkshire|South Lanarkshire|D
+scos|Southern Scots|sco|GBR:Scottish Borders|Dumfries and Galloway|South Ayrshire|D
+scou|Ulster Scots|sco|GBR:Antrim|Down|Ards|North Down|Larne|Moyle|Ballymoney|Coleraine|Carrickfergus|Newtownabbey|Ballymena|Limavady|D
+frs|Frisian|wg
+fyw|West Frisian|frs|NLD:Friesland|L
+fyn|North Frisian|frs|DEU@8.2,54.4,9.2,55.1|L
+fys|Saterland Frisian|frs|DEU@7.5,52.9,7.9,53.2|L
+lfr|Low Franconian|wg
+nl|Dutch|lfr|NLD;BEL:Antwerp|East Flanders|Flemish Brabant|Brussels|Limburg|West Flanders|L
+nlh|Hollandic|nl|NLD:Noord-Holland|Zuid-Holland|Utrecht|Flevoland|D
+nlb|Brabantian|nl|NLD:Noord-Brabant;BEL:Antwerp|Flemish Brabant|Brussels|D
+nlz|Zeelandic|nl|NLD:Zeeland|D
+nle|East Flemish|nl|BEL:East Flanders|D
+vls|West Flemish|lfr|BEL:West Flanders;FRA:Nord@2.0,50.7,2.7,51.1|L
+lim|Limburgish|lfr|NLD:Limburg;BEL:Limburg;DEU@5.9,50.7,6.3,51.2|L
+lsx|Low Saxon–Low German|wg
+nds|Low Saxon|lsx|NLD:Groningen|Drenthe|Overijssel|Gelderland|L
+ndg|Low German|lsx|DEU:Schleswig-Holstein|Hamburg|Bremen|Niedersachsen|Mecklenburg-Vorpommern|Brandenburg|Berlin;POL:West Pomeranian|L
+ndn|Northern Low Saxon|ndg|DEU:Schleswig-Holstein|Hamburg|Bremen|Niedersachsen|D
+ndw|Westphalian|ndg|DEU:Nordrhein-Westfalen@6.7,51.4,9.3,52.5|D
+nde|East Low German|ndg|DEU:Mecklenburg-Vorpommern|Brandenburg|Berlin;POL:West Pomeranian|D
+hg|High German|wg
+de|German|hg|DEU;AUT;LIE;LUX;CHE:Zürich|Bern|Aargau|Lucerne|Sankt Gallen|Thurgau|Schaffhausen|Solothurn|Basel-Stadt|Basel-Landschaft|Zug|Schwyz|Uri|Glarus|Obwalden|Nidwalden|Appenzell Ausserrhoden|Appenzell Innerrhoden|Graubünden;ITA:Bozen;BEL:Liege@6.0,50.2,6.5,50.8|L
+dec|Central German|de|DEU:Hessen|Thüringen|Sachsen|Saarland|Rheinland-Pfalz|Nordrhein-Westfalen@6.0,50.0,9.0,51.2|D
+deu|Upper German|de|DEU:Bayern|Baden-Württemberg;AUT;CHE;LIE|D
+dtr|Thuringian-Upper Saxon|dec|DEU:Thüringen|Sachsen|D
+drf|Rhine Franconian|dec|DEU:Hessen|Saarland|Rheinland-Pfalz|D
+dba|Bavarian|deu|DEU:Bayern@10.5,47.2,13.9,50.3;AUT:!Vorarlberg|D
+dal|Alemannic|deu|DEU:Baden-Württemberg@7.4,47.4,9.8,49.0;AUT:Vorarlberg;CHE;LIE|D
+dsw|Swabian|deu|DEU:Baden-Württemberg@8.8,47.6,10.3,49.2;DEU:Bayern@9.7,47.7,10.9,48.9|D
+dfr|East Franconian|deu|DEU:Bayern@9.0,49.0,12.0,50.6|D
+lb|Luxembourgish|hg|LUX|L
+als|Alsatian|hg|FRA:Bas-Rhin|Haute-Rhin|L
+wal|Walser German|hg|ITA:Aoste@7.4,45.7,8.0,46.0;CHE:Valais|L
+cim|Cimbrian|hg|ITA:Vicenza@11.2,45.6,11.7,46.0;ITA:Verona@11.0,45.6,11.3,45.8|L
+moc|Mòcheno|hg|ITA:Trento@11.2,46.0,11.5,46.2|L
+yi|Yiddish|wg||Ls|non-territorial
+it|Italic|ie
+osc|Osco-Umbrian|it||xn|Oscan, Umbrian, Sabellic
+ven|Venetic|it||xn
+lf|Latino-Faliscan|it
+fal|Faliscan|lf||Lxn
+la|Latin|lf|VAT|L
+rm|Romance|lf
+gr|Gallo-Romance|rm
+oil|Langues d'oïl|gr
+fr|French|oil|FRA;BEL:Hainaut|Liege|Namur|Luxembourg|Walloon Brabant|Brussels;CHE:Vaud|Genève|Neuchâtel|Jura|Fribourg|Valais;LUX;ITA:Aoste;MCO|L
+nrm|Norman|oil|FRA:Manche|Calvados|Orne|Eure|Seine-Maritime;GGY;JEY|L
+gal|Gallo|oil|FRA:Ille-et-Vilaine|Côtes-d'Armor|Loire-Atlantique|Mayenne|L
+pic|Picard|oil|FRA:Nord|Pas-de-Calais|Somme;BEL:Hainaut|L
+wln|Walloon|oil|BEL:Liege|Namur|Luxembourg|Walloon Brabant|L
+chm|Champenois|oil|FRA:Marne|Aube|Haute-Marne|Ardennes;BEL:Hainaut@4.0,49.9,4.6,50.2|L
+lor|Lorrain|oil|FRA:Meuse|Meurthe-et-Moselle|Vosges;BEL:Luxembourg@5.2,49.5,5.8,49.8|L
+bur|Burgundian|oil|FRA:Yonne|Côte-d'Or|Saône-et-Loire|Nièvre|L
+poi|Poitevin-Saintongeais|oil|FRA:Vienne|Deux-Sèvres|Vendée|Charente-Maritime|Charente|L
+fcm|Franc-Comtois|oil|FRA:Doubs|Haute-Saône|Territoire de Belfort|Jura|L
+arp|Arpitan|gr|FRA:Rhône|Loire|Ain|Savoie|Haute-Savoie;CHE:Vaud|Fribourg|Valais|Genève|Neuchâtel;ITA:Aoste|L
+oc|Occitan|gr|FRA:Gironde|Lot-et-Garonne|Landes|Gers|Hautes-Pyrénées|Pyrénées-Atlantiques|Haute-Garonne|Ariège|Tarn|Tarn-et-Garonne|Aude|Hérault|Gard|Aveyron|Lozère|Lot|Dordogne|Corrèze|Haute-Vienne|Cantal|Puy-de-Dôme|Haute-Loire|Ardèche|Drôme|Vaucluse|Bouches-du-Rhône|Var|Alpes-de-Haute-Provence|Hautes-Alpes|Alpes-Maritimes;ESP@0.6,42.6,1.1,42.95|L
+ocg|Gascon|oc|FRA:Gironde|Landes|Gers|Hautes-Pyrénées|Pyrénées-Atlantiques;ESP@0.6,42.6,1.1,42.95|D
+ocl|Languedocien|oc|FRA:Haute-Garonne|Ariège|Tarn|Tarn-et-Garonne|Aude|Hérault|Gard|Aveyron|Lozère|Lot|D
+ocp|Provençal|oc|FRA:Vaucluse|Bouches-du-Rhône|Var|Alpes-de-Haute-Provence|Alpes-Maritimes|D
+ocn|Limousin and Auvergnat|oc|FRA:Dordogne|Corrèze|Haute-Vienne|Cantal|Puy-de-Dôme|Haute-Loire|D
+ocv|Vivaro-Alpine|oc|FRA:Hautes-Alpes|Drôme|Ardèche|D
+ibr|Ibero-Romance|rm
+ca|Catalan|ibr|AND;ESP:Barcelona|Gerona|Lérida|Tarragona|Baleares|Castellón|Valencia|Alicante;FRA:Pyrénées-Orientales;ITA@8.2,40.5,8.4,40.7|L
+cae|Eastern Catalan|ca|ESP:Barcelona|Gerona|Baleares;FRA:Pyrénées-Orientales;AND|D
+caw|Western Catalan|ca|ESP:Lérida|Tarragona|D
+cav|Valencian|ca|ESP:Castellón|Valencia|Alicante|L
+cal|Algherese|ca|ITA@8.2,40.5,8.4,40.7|D
+es|Spanish|ibr|ESP;GIB|L
+esc2|Castilian Spanish|es|ESP:Burgos|Palencia|Valladolid|Soria|Segovia|Ávila|Madrid|Toledo|Guadalajara|Cuenca|Albacete|Ciudad Real|La Rioja|Álava|Cantabria|León|Zamora|Salamanca|D
+esa|Andalusian Spanish|es|ESP:Almería|Cádiz|Córdoba|Granada|Huelva|Jaén|Málaga|Sevilla|D
+esk|Canarian Spanish|es|ESP:Las Palmas|Santa Cruz de Tenerife|D
+esm|Extremaduran-Murcian Spanish|es|ESP:Badajoz|Cáceres|Murcia|D
+an|Aragonese|ibr|ESP:Huesca@-0.5,41.9,0.8,42.9|L
+alp|Asturleonese|ibr
+ast|Asturian|alp|ESP:Asturias|L
+leo|Leonese|alp|ESP:León@-6.6,42.0,-5.0,43.0;ESP:Zamora@-6.6,41.5,-5.5,42.3|L
+mwl|Mirandese|alp|PRT:Bragança@-6.8,41.3,-6.2,41.7|L
+gp|Galician-Portuguese|ibr
+gl|Galician|gp|ESP:La Coruña|Lugo|Orense|Pontevedra|L
+pt|Portuguese|gp|PRT|L
+ptn|Northern Portuguese|pt|PRT:Viana do Castelo|Braga|Porto|Vila Real|Bragança|Viseu|Guarda|Aveiro|D
+ptc|Central Portuguese|pt|PRT:Coimbra|Leiria|Lisboa|Santarém|Castelo Branco|Portalegre|Setúbal|D
+pts|Southern Portuguese|pt|PRT:Évora|Beja|Faro|D
+pta|Azorean Portuguese|pt|PRT:Azores|D
+ptm|Madeiran Portuguese|pt|PRT:Madeira|D
+fax|Fala|gp|ESP:Cáceres@-7.2,40.0,-6.5,40.3|L
+bar|Barranquenho|gp|PRT:Beja@-7.2,38.0,-6.9,38.2|L
+lad|Judeo-Spanish (Ladino)|ibr||Ls|non-territorial
+ido|Italo-Dalmatian|rm
+itr|Italo-Romance|ido
+ita|Italian|itr|ITA;SMR;VAT;CHE:Ticino|Graubünden@9.0,46.0,10.5,46.7;HRV:Istarska|L
+itp|Piedmontese|ita|ITA:Turin|Cuneo|Asti|Alessandria|Biella|Vercelli|Novara|D
+itl|Ligurian|ita|ITA:Imperia|Savona|Genova|La Spezia;MCO|D
+itg|Lombard|ita|ITA:Milano|Bergamo|Brescia|Como|Cremona|Lecco|Lodi|Mantova|Monza e Brianza|Pavia|Sondrio|Varese|Verbano-Cusio-Ossola;CHE:Ticino|D
+ite|Emilian-Romagnol|ita|ITA:Piacenza|Parma|Reggio Emilia|Modena|Bologna|Ferrara|Ravenna|Forlì-Cesena|Rimini;SMR|D
+itv|Venetian|ita|ITA:Venezia|Padova|Verona|Vicenza|Treviso|Rovigo|Belluno|Trieste;HRV:Istarska|D
+itt|Tuscan|ita|ITA:Firenze|Arezzo|Pisa|Livorno|Lucca|Massa-Carrara|Pistoia|Prato|Siena|Grosseto|D
+itc|Central Italian|ita|ITA:Perugia|Terni|Ancona|Macerata|Ascoli Piceno|Fermo|Pesaro e Urbino|Viterbo|Rieti|Roma|Frosinone|Latina|D
+itn|Neapolitan|ita|ITA:Napoli|Caserta|Benevento|Avellino|Salerno|L'Aquila|Teramo|Pescara|Chieti|Campobasso|Isernia|Potenza|Matera|Bari|Foggia|Barletta-Andria Trani|D
+its|Sicilian|ita|ITA:Agrigento|Caltanissetta|Catania|Enna|Messina|Palermo|Ragusa|Siracusa|Trapani|Reggio Calabria|Catanzaro|Vibo Valentia|Crotene|Cosenza@16.0,38.8,17.0,39.5;ITA:Lecce|Brindisi|Taranto|D
+co|Corsican|ido|FRA:Corse-du-Sud|Haute-Corse;ITA:Olbia-Tempio|L
+sc|Sardinian|ido|ITA:Cagliari|Carbonia-Iglesias|Medio Campidano|Nuoro|Ogliastra|Oristrano|Sassari|L
+scc|Campidanese|sc|ITA:Cagliari|Carbonia-Iglesias|Medio Campidano|D
+scl|Logudorese-Nuorese|sc|ITA:Nuoro|Oristrano|Ogliastra|Sassari|D
+mc|Monégasque|ido|MCO|L
+ist|Istriot|ido|HRV@13.6,44.8,13.95,45.1|L
+dlm|Dalmatian|ido||Lxn|Adriatic coast
+rr|Rhaeto-Romance|rm||d|Unity debated (the Questione ladina)
+roh|Romansh|rr|CHE:Graubünden|L
+lld|Ladin|rr|ITA:Bozen@11.6,46.4,12.0,46.7;ITA:Belluno@11.8,46.3,12.2,46.6;ITA:Trento@11.5,46.3,11.9,46.6|L
+fur|Friulian|rr|ITA:Udine|Pordenone|Gorizia|L
+ero|Eastern Romance|rm
+ro|Romanian|ero|ROU;MDA;UKR:Chernivtsi;UKR:Odessa@28.5,45.3,30.0,46.3;SRB:Južno-Banatski|Srednje-Banatski|L
+rom|Muntenian Romanian|ro|ROU:Arges|Dâmbovita|Prahova|Teleorman|Giurgiu|Calarasi|Ialomita|Braila|Buzau|Ilfov|Bucharest|Olt|Dolj|Gorj|Mehedinti|Vâlcea|D
+roo|Moldavian Romanian|ro|ROU:Iasi|Vaslui|Botosani|Suceava|Neamt|Bacau|Vrancea|Galati;MDA|D
+rot|Transylvanian Romanian|ro|ROU:Cluj|Alba|Sibiu|Brasov|Mures|Bistrita-Nasaud|Salaj|Maramures|Hunedoara|Harghita|Covasna|D
+rob|Banat-Crișana Romanian|ro|ROU:Timis|Arad|Caras-Severin|Bihor|Satu Mare|D
+rod|Dobrujan Romanian|ro|ROU:Constanta|Tulcea|D
+mol|Moldovan|ro|MDA|Ld
+aro|Aromanian|ero|ALB@20.0,40.2,21.2,40.9;GRC:Ipeiros|Thessalia@21.0,39.5,22.0,40.2;MKD@21.0,40.9,21.9,41.8|Ls
+mgr|Megleno-Romanian|ero|GRC@22.0,40.8,22.5,41.0;MKD@22.3,41.0,22.9,41.3|L
+iro|Istro-Romanian|ero|HRV@14.0,45.2,14.4,45.4|L
+dac|Dacian|ie||xn|Carpathian-Danubian
+thr|Thracian|ie||xn|Balkans
+ill|Illyrian|ie||xn|Western Balkans
+mes|Messapic|ie||xn|Apulia
+alb|Albanian|ie
+gheg|Gheg|alb|ALB@19,41.3,21,42.7;KOS;MKD@20.5,41.1,21.6,42.2;MNE@19,41.8,20.5,42.6|L
+tosk|Tosk|alb|ALB@19,39.6,21.2,41.3;MKD@20.9,40.75,21.2,41.2|L
+arv|Arvanitika|tosk|GRC:Attiki|Stereá Elláda|Peloponnisos|L
+arb|Arbëresh|tosk|ITA:Cosenza|Campobasso|Foggia@15.5,41.3,16.5,41.8|Ls
+hel|Hellenic|ie
+mac|Ancient Macedonian|hel||xn
+el|Greek|hel|GRC;CYP;CYN|L
+elm|Mainland Greek|el|GRC:!Kriti|Notio Aigaio|Voreio Aigaio|Ionioi Nisoi|D
+elk|Cretan Greek|el|GRC:Kriti|D
+elc|Cypriot Greek|el|CYP;CYN|D
+eli|Aegean and Ionian Greek|el|GRC:Notio Aigaio|Voreio Aigaio|Ionioi Nisoi|D
+grk|Griko|el|ITA:Lecce@18.1,39.95,18.4,40.3;ITA:Reggio Calabria@15.7,37.9,16.0,38.1|L
+rum|Rumeika|el|UKR:Donets'k@37.0,47.0,38.0,47.5|L
+cpg|Cappadocian Greek|el||Ln|Cappadocia, outside the Europe definition
+pnt|Pontic Greek|el||Ln|Black Sea coast of Anatolia and Caucasus
+tsd|Tsakonian|hel|GRC:Peloponnisos@22.7,37.0,23.3,37.5|L
+bs|Balto-Slavic|ie
+bl|Baltic|bs
+lt|Lithuanian|bl|LTU;BLR@25.0,53.9,26.0,54.4|L
+lta|Aukštaitian|lt|LTU:Panevezio|Utenos|Vilniaus|Kauno|Alytaus|Marijampoles|D
+lts|Samogitian|lt|LTU:Telšiai|Klaipedos|Taurages|Šiauliai|Ld
+lv|Latvian|bl|LVA|L
+lvl|Latgalian|lv|LVA@26.0,55.7,28.3,57.1|Ld
+lvv|Livonian|lv|LVA@22.0,57.4,22.6,57.8|L
+prs|Old Prussian|bl||Lxn
+cur|Curonian|bl||Lxn
+sl|Slavic|bs
+ws|West Slavic|sl
+cs|Czech-Slovak|ws
+cz|Czech|cs|CZE|L
+czb|Bohemian|cz|CZE:Prague|Středočeský|Jihočeský|Plzeňský|Karlovarský|Ústecký|Liberecký|Královéhradecký|Pardubický|Vysočina|D
+czm|Moravian|cz|CZE:Jihomoravský|Olomoucký|Zlínský|Moravskoslezský|D
+sk|Slovak|cs|SVK|L
+skw|Western Slovak|sk|SVK:Bratislavský|Trnavský|Trenciansky|Nitriansky|D
+skc|Central Slovak|sk|SVK:Žilinský|Banskobystrický|D
+ske|Eastern Slovak|sk|SVK:Prešov|Košický|D
+lc|Lechitic|ws||d|Internal structure disputed
+pl|Polish|lc|POL;BLR@23.5,53.2,25.6,54.4;LTU:Vilniaus|L
+plg|Greater Polish|pl|POL:Greater Poland|Kuyavian-Pomeranian|Lubusz|D
+plm|Masovian|pl|POL:Masovian|Podlachian|Warmian-Masurian|Łódź|D
+pll|Lesser Polish|pl|POL:Lesser Poland|Subcarpathian|Świętokrzyskie|Lublin|D
+szl|Silesian|lc|POL:Silesian|Opole|Lower Silesian@16.5,50.0,19.0,51.0;CZE:Moravskoslezský@17.5,49.7,18.9,50.2|Ld
+csb|Kashubian|lc|POL:Pomeranian@17.3,53.8,18.6,54.8|L
+pab|Polabian|lc||Lxn
+sb|Sorbian|ws
+hsb|Upper Sorbian|sb|DEU:Sachsen@13.9,51.1,14.6,51.5|L
+dsb|Lower Sorbian|sb|DEU:Brandenburg@13.7,51.6,14.5,52.1|L
+es2|East Slavic|sl
+ru|Russian|es2|RUS:!Chechnya|Dagestan|Ingush|Kabardin-Balkar|Karachay-Cherkess|North Ossetia|Kalmyk|L
+rus|Southern Russian|ru|RUS:Belgorod|Kursk|Orel|Voronezh|Lipetsk|Tambov|Penza|Ryazan'|Tula|Bryansk|Rostov|Krasnodar|Stavropol'|Volgograd|Saratov|D
+ruc|Central Russian|ru|RUS:Moskva|Moskovskaya|Vladimir|Ivanovo|Yaroslavl'|Tver'|Smolensk|Nizhegorod|Kaluga|Kostroma|D
+run|Northern Russian|ru|RUS:Arkhangel'sk|Vologda|Novgorod|Pskov|Leningrad|Karelia|Murmansk|Komi|Nenets|D
+ruv|Volga-Ural Russian|ru|RUS:Samara|Ul'yanovsk|Orenburg|Perm'|Kirov|Bashkortostan|Udmurt|Tatarstan|Chelyabinsk|Sverdlovsk|D
+rul|Lipovan Russian|ru|ROU:Tulcea@28.5,44.8,29.5,45.3|D
+uk|Ukrainian|es2|UKR|L
+ukn|Polissian|uk|UKR:Volyn|Rivne|Zhytomyr|Chernihiv|Kiev|Kiev City|D
+ukw|South-Western Ukrainian|uk|UKR:L'viv|Ternopil'|Ivano-Frankivs'k|Khmel'nyts'kyy|Vinnytsya|Chernivtsi|D
+uke|South-Eastern Ukrainian|uk|UKR:Cherkasy|Poltava|Sumy|Kharkiv|Luhans'k|Donets'k|Dnipropetrovs'k|Zaporizhzhya|Kherson|Mykolayiv|Odessa|Kirovohrad|D
+be|Belarusian|es2|BLR|L
+ben|North-Eastern Belarusian|be|BLR@26.5,53.6,33,56.2|D
+bes|South-Western Belarusian|be|BLR@23,51.2,28.5,53.6|D
+rue|Rusyn|es2||Ld|Sometimes treated as Ukrainian
+rul2|Lemko|rue|POL:Subcarpathian|Lesser Poland@21.0,49.3,22.2,49.7;UKR:Transcarpathia@22.0,48.5,23.0,48.8|D
+ruk|Carpathian Rusyn|rue|UKR:Transcarpathia;SVK:Prešov@21.0,48.9,22.2,49.4|D
+rup|Pannonian Rusyn|rue|SRB:Južno-Backi@19.0,45.2,19.9,45.6;HRV:Vukovarsko-Srijemska@18.8,45.0,19.2,45.4|D
+ss|South Slavic|sl
+wss|Western South Slavic|ss
+sh|Serbo-Croatian|wss
+hr|Croatian|sh|HRV;BIH:West Herzegovina|Herzegovina-Neretva@17.0,43.0,18.0,43.8;AUT:Burgenland@16.3,47.4,17.0,47.9|L
+hrk|Kajkavian|hr|HRV:Grad Zagreb|Zagrebacka|Krapinsko-Zagorska|Varaždinska|Medimurska|Koprivničko-Križevačka|D
+hrc|Chakavian|hr|HRV:Primorsko-Goranska|Istarska|Splitsko-Dalmatinska|Zadarska|Šibensko-Kninska|D
+hrs|Shtokavian Croatian|hr|HRV:Osjecko-Baranjska|Vukovarsko-Srijemska|Brodsko-Posavska|Viroviticko-Podravska|Bjelovarsko-bilogorska|Sisacko-Moslavacka|Karlovacka|Licko-Senjska|Dubrovacko-Neretvanska|D
+hrb|Bunjevac|hr|SRB:Severno-Backi;HRV:Osjecko-Baranjska@18.4,45.5,19.0,46.0|D
+hrg|Burgenland Croatian|hr|AUT:Burgenland@16.3,47.4,17.0,47.9|D
+hrm|Molise Croatian|hr|ITA:Campobasso@14.6,41.8,15.1,42.0|D
+sr|Serbian|sh|SRB;MNE;BIH:Banja Luka|Bijeljina|Doboj|Foča|Trebinje|Vlasenica|Sarajevo-romanija;HRV:Vukovarsko-Srijemska@18.8,44.9,19.3,45.5|L
+bs2|Bosnian|sh|BIH:Sarajevo|Zenica-Doboj|Tuzla|Central Bosnia|Una-Sana|Bosnian Podrinje|Brčko Distrikt|West Bosnia|Posavina|L
+cnr|Montenegrin|sh|MNE|Ld
+sl2|Slovene|wss|SVN;AUT:Kärnten@13.8,46.4,14.8,46.7;ITA:Trieste|Gorizia@13.4,45.6,13.9,46.0|L
+sll|Carniolan|sl2|SVN@14.0,45.4,15.2,46.4|D
+sls|Styrian Slovene|sl2|SVN@15.0,46.0,16.1,46.9|D
+slk|Carinthian Slovene|sl2|SVN@14.2,46.3,15.2,46.6;AUT:Kärnten@13.8,46.4,14.8,46.7|D
+slp|Prekmurje Slovene|sl2|SVN@16.0,46.4,16.6,46.95|D
+slc|Littoral Slovene|sl2|SVN@13.4,45.5,14.2,46.4;ITA:Trieste|Gorizia@13.4,45.6,13.9,46.0|D
+tor|Torlak|ss|SRB:Pirotski|Jablanicki|Pcinjski|Zajecarski;BGR:Kyustendil|Pernik|Vidin;MKD@21.5,41.9,22.8,42.3|Ld
+ess|Eastern South Slavic|ss
+bg|Bulgarian|ess|BGR|L
+bgw|Western Bulgarian|bg|BGR:Kyustendil|Pernik|Sofia|Grad Sofiya|Blagoevgrad|Vidin|Montana|Vratsa|D
+bge|Eastern Bulgarian|bg|BGR:!Kyustendil|Pernik|Sofia|Grad Sofiya|Blagoevgrad|Vidin|Montana|Vratsa|D
+pom|Pomak|bg|BGR:Smolyan|Blagoevgrad@23.7,41.4,24.3,41.9;GRC@24.5,41.0,25.7,41.4|Ld
+mk|Macedonian|ess|MKD;ALB@20.9,40.75,21.1,40.9|L
+mkw|Western Macedonian|mk|MKD@20.4,40.8,21.7,42.0|D
+mke|Eastern Macedonian|mk|MKD@21.7,41.0,23.0,42.2|D
+tk|Turkic||||Proto-Turkic
+oh|Oghur|tk
+cv|Chuvash|oh|RUS:Chuvash;RUS:Ul'yanovsk@47.0,54.0,48.5,54.8|L
+ct|Common Turkic|tk
+og|Oghuz|ct
+tr|Turkish|og|TUR@26.0,40.8,29.2,42.1;CYN;BGR:Kardzhali|Razgrad|Shumen|Targovishte|Silistra|Haskovo;GRC:Anatoliki Makedonia kai Thraki|L
+gag|Gagauz|og|MDA@28.3,45.9,28.9,46.5;UKR:Odessa@29.5,45.4,30.6,45.9;BGR:Dobrich|Varna|L
+az|Azerbaijani|og|AZE|L
+urm|Urum|og|UKR:Donets'k@37.0,47.0,38.0,47.5|L
+kp|Kipchak|ct
+kpb|Kipchak-Bulgar|kp
+tt|Tatar|kpb|RUS:Tatarstan|Ul'yanovsk@47.5,54.0,50.0,55.0|L
+ba|Bashkir|kpb|RUS:Bashkortostan|L
+kpc|Kipchak-Cuman|kp
+crh|Crimean Tatar|kpc|RUS:Crimea|Sevastopol;ROU:Constanta@28.0,43.9,29.0,44.6|L
+krc|Karachay-Balkar|kpc|RUS:Karachay-Cherkess@40.0,43.0,42.5,43.9;RUS:Kabardin-Balkar@42.3,43.0,43.9,43.5|L
+kum|Kumyk|kpc|RUS:Dagestan@46.8,42.5,48.0,43.5|L
+krm|Karaim|kpc|LTU:Vilniaus@24.8,54.6,25.2,54.8|L
+kpn|Kipchak-Nogai|kp
+nog|Nogai|kpn|RUS:Dagestan@44.0,43.8,47.5,45.0;RUS:Stavropol'@43.5,44.0,45.0,45.5|L
+kk|Kazakh|kpn|KAZ|L
+kry|Krymchak|kpc||Lxn|Judeo-Crimean Tatar
+ur|Uralic||||Proto-Uralic
+fu|Finno-Ugric|ur
+fp|Finno-Permic|fu
+fv|Finno-Volgaic|fp
+fs|Finno-Samic|fv
+fn|Finnic|fs
+fi|Finnish|fn|FIN;SWE:Norrbotten@22.0,65.5,24.2,68.0|L
+fiw|Southwestern Finnish|fi|FIN:Finland Proper|Satakunta|Uusimaa|D
+fit|Tavastian|fi|FIN:Tavastia Proper|Päijät-Häme|Pirkanmaa|D
+fio|Ostrobothnian|fi|FIN:Ostrobothnia|Central Ostrobothnia|Southern Ostrobothnia|D
+fis|Savonian|fi|FIN:Northern Savonia|Southern Savonia|Central Finland|North Karelia|D
+fie|Southeastern Finnish|fi|FIN:Kymenlaakso|South Karelia|D
+fin|Peräpohjola Finnish|fi|FIN:Lapland|Northern Ostrobothnia|Kainuu|D
+mea|Meänkieli|fn|SWE:Norrbotten@22.0,65.5,24.2,68.0|Ld
+kvn|Kven|fn|NOR:Troms|Finnmark|Ld
+skf|Skogfinnish|fn|NOR:Hedmark@11.5,60.0,12.8,61.5|L
+kar|Karelian|fn|RUS:Karelia;RUS:Tver'@34.0,56.5,36.5,57.5|L
+vep|Veps|fn|RUS:Karelia@34.0,61.0,35.5,62.0;RUS:Leningrad@34.5,59.8,35.8,60.5;RUS:Vologda@36.0,59.5,37.5,60.5|L
+ing|Ingrian|fn|RUS:Leningrad@28.5,59.3,30.5,59.9|L
+vot|Votic|fn|RUS:Leningrad@28.3,59.4,28.9,59.7|L
+et|Estonian|fn|EST|L
+etn|North Estonian|et|EST:Harju|Järva|Lääne-Viru|Ida-Viru|Rapla|Lääne|Hiiu|Saare|Pärnu|Jõgeva|D
+ets|South Estonian|et|EST:Tartu|Viljandi|Valga|Põlva|Võru|D
+vro|Võro|fn|EST:Võru|Põlva|Ld
+liv|Livonian|fn|LVA@22.0,57.4,22.6,57.8|L
+sm|Sámi|fs
+sme|Northern Sámi|sm|NOR:Finnmark|Troms;FIN:Lapland@22.0,68.0,29.0,70.2;SWE:Norrbotten@17.0,67.5,23.5,69.2|L
+smj|Lule Sámi|sm|SWE:Norrbotten@16.0,67.0,18.5,68.3;NOR:Nordland@15.0,67.5,17.5,68.4|L
+smb|Pite Sámi|sm|SWE:Norrbotten@17.0,65.8,19.0,66.8|L
+sju|Ume Sámi|sm|SWE:Västerbotten@15.5,65.0,17.5,66.5|L
+sma|Southern Sámi|sm|NOR:Nord-Trøndelag|Nordland@12.0,63.5,15.0,66.0;SWE:Jämtland|Västerbotten@12.0,63.5,16.0,65.5|L
+smn|Inari Sámi|sm|FIN:Lapland@27.0,68.5,28.6,69.5|L
+sms|Skolt Sámi|sm|FIN:Lapland@28.5,68.5,29.9,69.6;RUS:Murmansk@29.5,68.5,30.5,69.5|L
+sjd|Kildin Sámi|sm|RUS:Murmansk|L
+mrd|Mordvinic|fv
+myv|Erzya|mrd|RUS:Mordovia@43.0,53.8,45.5,55.0;RUS:Nizhegorod@43.5,54.5,46.0,55.5|L
+mdf|Moksha|mrd|RUS:Mordovia@42.5,53.2,45.0,54.4;RUS:Penza@43.0,53.0,45.0,54.0|L
+mhr|Meadow and Hill Mari|fv|RUS:Mariy-El|L
+prm|Permic|fp
+udm|Udmurt|prm|RUS:Udmurt|L
+kpv|Komi-Zyrian|prm|RUS:Komi|L
+koi|Komi-Permyak|prm|RUS:Perm'@53.0,58.5,57.0,60.5|L
+ug|Ugric|fu
+hu|Hungarian|ug|HUN;ROU:Harghita|Covasna|Mures@23.5,45.5,26.5,47.0;ROU:Satu Mare|Bihor@21.0,46.5,23.0,48.0;SVK@17.0,47.7,22.5,48.5;SRB:Severno-Backi|Severno-Banatski|Srednje-Banatski;UKR:Transcarpathia@22.0,48.1,23.0,48.6;AUT:Burgenland@16.3,47.0,17.2,47.8;HRV:Osjecko-Baranjska@18.4,45.5,19.0,46.0|L
+huw|Transdanubian Hungarian|hu|HUN:Gyor-Moson-Sopron|Vas|Zala|Veszprém|Fejér|Somogy|Baranya|Tolna|Komárom-Esztergom|D
+hug|Great Plain Hungarian|hu|HUN:Bács-Kiskun|Csongrád|Békés|Jász-Nagykun-Szolnok|Hajdú-Bihar|Pest|Budapest|D
+hup|Palóc|hu|HUN:Nógrád|Heves|Borsod-Abaúj-Zemplén;SVK@18.5,48.0,21.5,48.6|D
+hus|Székely|hu|ROU:Harghita|Covasna|D
+huc|Csángó|hu|ROU:Bacau@26.5,46.3,27.2,46.9|D
+sam|Samoyedic|ur
+yrk|Nenets|sam|RUS:Nenets|L
+eu|Basque||ESP:Gipuzkoa|Bizkaia|Álava|Navarra@-2.5,42.5,-1.0,43.3;FRA:Pyrénées-Atlantiques@-1.8,43.0,-0.6,43.5|L|No proven ancestor
+eub|Biscayan|eu|ESP:Bizkaia|D
+eug|Gipuzkoan|eu|ESP:Gipuzkoa|D
+eun|Navarrese|eu|ESP:Navarra@-2.5,42.5,-1.0,43.3;ESP:Álava|D
+eul|Navarro-Lapurdian|eu|FRA:Pyrénées-Atlantiques@-1.8,43.1,-1.1,43.5|D
+eus|Souletin|eu|FRA:Pyrénées-Atlantiques@-1.0,43.0,-0.6,43.3|D
+aa|Afro-Asiatic||||Proto-Afro-Asiatic
+sem|Semitic|aa
+mt|Maltese|sem|MLT|L
+acy|Cypriot Maronite Arabic|sem|CYN@32.9,35.25,33.3,35.45|L
+arb2|Arabic and other Semitic languages|sem||Ln|outside Europe
+kv|Kartvelian||||Proto-Kartvelian
+ka|Georgian|kv|GEO|L
+sva|Svan|kv|GEO:Samegrelo-Zemo Svaneti@42.0,42.8,43.3,43.3|L
+xmf|Megrelian|kv|GEO:Samegrelo-Zemo Svaneti@41.5,42.0,42.4,42.7|L
+lzz|Laz|kv||Ln|Black Sea coast of Turkey
+nwc|Northwest Caucasian||||Proto-Northwest Caucasian
+abk|Abkhaz|nwc|GEO:Abkhazia|L
+abq|Abaza|nwc|RUS:Karachay-Cherkess@41.5,43.8,42.5,44.3|L
+ady|Adyghe|nwc|RUS:Adygey;RUS:Krasnodar@38.0,44.0,39.5,45.0|L
+kbd|Kabardian|nwc|RUS:Kabardin-Balkar;RUS:Karachay-Cherkess@41.5,44.0,42.5,44.5|L
+nec|Northeast Caucasian||||Proto-Northeast Caucasian
+nak|Nakh|nec
+ce|Chechen|nak|RUS:Chechnya|L
+inh|Ingush|nak|RUS:Ingush|L
+dag|Dagestanian|nec
+av|Avar|dag|RUS:Dagestan@46.0,42.0,47.0,43.2;AZE:Balakən|Zaqatala@46.3,41.5,47.0,41.9|L
+lbe|Lak|dag|RUS:Dagestan@46.7,42.4,47.3,42.9|L
+dar|Dargwa|dag|RUS:Dagestan@47.0,42.0,48.2,43.0|L
+lez|Lezgian|dag|RUS:Dagestan@47.4,41.1,48.6,42.0;AZE:Qusar|Quba|Xaçmaz|L
+tab|Tabasaran|dag|RUS:Dagestan@47.7,41.8,48.4,42.3|L
+agx|Agul|dag|RUS:Dagestan@47.0,41.5,47.7,42.0|L
+rut|Rutul|dag|RUS:Dagestan@47.2,41.4,47.6,41.75;AZE:Qax@46.8,41.4,47.3,41.7|L
+tkr|Tsakhur|dag|RUS:Dagestan@46.8,41.5,47.3,41.9;AZE:Zaqatala|L
+aqc|Archi|dag|RUS:Dagestan@47.0,42.0,47.3,42.2|L
+bdk|Budukh|dag|AZE:Quba@48.1,41.1,48.5,41.4|L
+kry2|Kryts|dag|AZE:Quba@48.1,41.1,48.5,41.4|L
+kjj|Khinalug|dag|AZE:Quba@48.0,41.1,48.3,41.3|L
+udi|Udi|dag|AZE:Qəbələ@47.7,41.0,47.9,41.2|L
+mn|Mongolic||||Proto-Mongolic
+xal|Kalmyk|mn|RUS:Kalmyk|L
+ii|Indo-Iranian|ie
+ia|Indo-Aryan|ii
+rmy|Romani|ia||Ls|Dispersed
+rmb|Balkan Romani|rmy|BGR;MKD;ALB;KOS;SRB;BIH|s
+rmv|Vlax Romani|rmy|ROU;HUN;UKR:Transcarpathia|s
+rmc|Carpathian Romani|rmy|SVK|s
+rms|Sinte Romani|rmy|DEU;AUT;ITA@7,44,13,46.5|s
+rmf|Finnish Romani|rmy|FIN|s
+rmn|Norwegian Romani|rmy|NOR|s
+rma|Angloromani|rmy|GBR|s
+cal2|Caló|rmy|ESP;PRT|s
+hin|Hindi|ia||Ln
+urd|Urdu|ia||Ln
+ia2|Other Indo-Aryan languages|ia||Ln|outside Europe
+ir|Iranian|ii
+os|Ossetian|ir|RUS:North Ossetia;GEO:Shida Kartli@43.7,41.9,44.4,42.5|L
+tat|Tat|ir|AZE:Abşeron|Bakı|Quba|Şamaxı|L
+juh|Juhuri (Judeo-Tat)|tat|AZE:Quba@48.4,41.3,48.7,41.5;AZE:Bakı|L
+tly|Talysh|ir||Ln|southeast Azerbaijan, outside the Europe definition
+fa|Persian|ir||Ln
+ku|Kurdish|ir||Ln
+ps|Pashto|ir||Ln
+ir2|Other Iranian languages|ir||Ln
+nur|Nuristani|ii||Ln
+cel|Celtic|ie
+gdl|Goidelic|cel
+ga|Irish|gdl|IRL:Galway|Mayo|Donegal|Kerry|Cork|Waterford|L
+gac|Connacht Irish|ga|IRL:Galway|Mayo|D
+gau|Ulster Irish|ga|IRL:Donegal|D
+gam|Munster Irish|ga|IRL:Kerry|Cork|Waterford|D
+gd|Scottish Gaelic|gdl|GBR:Eilean Siar|Highland|Argyll and Bute|L
+gv|Manx|gdl|IMN|L
+bry|Brittonic|cel
+cy|Welsh|bry|GBR:Anglesey|Gwynedd|Conwy|Denbighshire|Flintshire|Wrexham|Powys|Ceredigion|Pembrokeshire|Carmarthenshire|Swansea|Neath Port Talbot|Bridgend|Vale of Glamorgan|Cardiff|Rhondda, Cynon, Taff|Merthyr Tydfil|Caerphilly|Blaenau Gwent|Torfaen|Monmouthshire|Newport|L
+kw|Cornish|bry|GBR:Cornwall|L
+bre|Breton|bry|FRA:Finistère|Morbihan|Côtes-d'Armor|L
+brk|Léon-Cornouaille-Trégor Breton|bre|FRA:Finistère|Côtes-d'Armor|D
+brv|Vannetais|bre|FRA:Morbihan|D
+ccl|Continental Celtic|cel||x|Gaulish, Celtiberian, Lepontic
+gaul|Gaulish|ccl||Lxn
+cbi|Celtiberian|ccl||Lxn
