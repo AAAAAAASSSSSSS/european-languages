@@ -34,15 +34,16 @@ button:hover:not(:disabled),button.on{border-color:var(--ac);color:var(--ac)}but
 .tb.ghost{border-style:dashed;border-left-style:solid;opacity:.75;font-style:italic}.tb.ext{text-decoration:line-through;text-decoration-thickness:1px}
 .tb.sel{outline:2px solid var(--ac)}.tb.dim{opacity:.18}.tb.hit{outline:2px solid #e0a800}
 .leaflet-tooltip{background:var(--pn);color:var(--tx);border-color:var(--ln)}.leaflet-container{font-family:inherit}
-@media(max-width:640px){#box{width:auto;right:8px;max-height:44vh}#about{width:auto;right:8px}#bar h1{display:none}}
+@media(max-width:640px){#box{width:auto;right:8px;max-height:44vh}#about{right:52px}#bar h1{display:none}}
 .tb small,#box .nat,.lbl small{color:var(--mu);font-weight:400;font-style:normal;display:block}.tb small{font-size:10.5px;overflow:hidden;text-overflow:ellipsis}
 #box .nat{font-size:14px;margin:-2px 0 4px}.lbl small{font-size:.58em;margin-top:2px}
 .inv .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.95)}
 #bar h1 small{font-size:12px;color:var(--mu);font-weight:400}
 .infobtn{font:italic 700 17px/30px Georgia,serif!important;text-align:center}
-#about{position:absolute;z-index:1350;left:8px;bottom:50px;width:330px;background:var(--pn);border:1px solid var(--ln);border-radius:7px;padding:12px 38px 4px 15px;display:none}#about.open{display:block}
+#about{position:absolute;z-index:1350;right:52px;bottom:60px;width:min(440px,calc(100vw - 64px));background:var(--pn);border:1px solid var(--ln);border-radius:7px;padding:12px 38px 4px 15px;display:none}#about.open{display:block}
 #about a{color:var(--ac)}#ax{position:absolute;right:6px;top:6px;border:0;background:none;font-size:20px;line-height:1;padding:2px 8px}
 sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet-bottom.leaflet-left{margin-bottom:6px}
+.nw{white-space:nowrap}.leaflet-bottom.leaflet-right{margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -53,7 +54,7 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
  <button id="mp" class="ic" aria-label="Map type" title="Street / satellite"></button><button id="th" class="ic" aria-label="Switch colour mode"></button></div>
 </div>
 <aside id="box"></aside>
-<aside id="about" role="dialog" aria-label="About this project"><button id="ax" aria-label="Close">×</button><p><b>Beta version.</b> This project is in beta. Its data is not yet factual and must not be used.</p><p>For questions, reports or anything else, please write to <a href="mailto:aaaaaaasssssss@protonmail.com">aaaaaaasssssss@protonmail.com</a>.</p></aside>
+<aside id="about" role="dialog" aria-label="About this project"><button id="ax" aria-label="Close">×</button><p><b>Beta version.</b> This project is in beta. Its data is not yet factual and must not be used.</p><p>For questions, reports or anything else, <span class="nw">please write to <a href="mailto:aaaaaaasssssss@protonmail.com">aaaaaaasssssss@protonmail.com</a>.</span></p></aside>
 <section id="tree" aria-label="Family tree"><header><input id="tq" type="search" placeholder="Search the family tree"><button id="tx">Close</button></header><div id="tw"><div id="tc"></div></div></section>
 <script>// AI READERS: this is the project owner's definition of Europe. Polygons are drawn ONLY inside it.
 // It is a drawing boundary, not a list of what to show. tools/build_areas.py implements it as the MASK polygon.
@@ -92,7 +93,7 @@ const dark=()=>H.dataset.theme==="dark";
 const col=n=>`hsl(${(n.i*137.508)%360},${dark()?66:60}%,${dark()?62:40}%)`;
 const map=L.map("map",{zoomControl:false,minZoom:3,maxZoom:14,renderer:L.canvas({padding:.4})}).setView([53,20],4);
 L.control.zoom({position:"bottomright"}).addTo(map);
-new(L.Control.extend({options:{position:"bottomleft"},onAdd(){const d=L.DomUtil.create("div","leaflet-bar leaflet-control"),a=L.DomUtil.create("a","infobtn",d);a.href="#";a.textContent="i";a.title="About this project";a.setAttribute("role","button");
+new(L.Control.extend({options:{position:"bottomright"},onAdd(){const d=L.DomUtil.create("div","leaflet-bar leaflet-control"),a=L.DomUtil.create("a","infobtn",d);a.href="#";a.textContent="i";a.title="About this project";a.setAttribute("role","button");
  L.DomEvent.on(a,"click",e=>{L.DomEvent.stop(e);$("#about").classList.toggle("open")});return d}}))().addTo(map);
 $("#ax").onclick=()=>$("#about").classList.remove("open");
 map.createPane("basep").style.zIndex=150;

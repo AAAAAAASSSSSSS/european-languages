@@ -21,7 +21,7 @@ const dark=()=>H.dataset.theme==="dark";
 const col=n=>`hsl(${(n.i*137.508)%360},${dark()?66:60}%,${dark()?62:40}%)`;
 const map=L.map("map",{zoomControl:false,minZoom:3,maxZoom:14,renderer:L.canvas({padding:.4})}).setView([53,20],4);
 L.control.zoom({position:"bottomright"}).addTo(map);
-new(L.Control.extend({options:{position:"bottomleft"},onAdd(){const d=L.DomUtil.create("div","leaflet-bar leaflet-control"),a=L.DomUtil.create("a","infobtn",d);a.href="#";a.textContent="i";a.title="About this project";a.setAttribute("role","button");
+new(L.Control.extend({options:{position:"bottomright"},onAdd(){const d=L.DomUtil.create("div","leaflet-bar leaflet-control"),a=L.DomUtil.create("a","infobtn",d);a.href="#";a.textContent="i";a.title="About this project";a.setAttribute("role","button");
  L.DomEvent.on(a,"click",e=>{L.DomEvent.stop(e);$("#about").classList.toggle("open")});return d}}))().addTo(map);
 $("#ax").onclick=()=>$("#about").classList.remove("open");
 map.createPane("basep").style.zIndex=150;
