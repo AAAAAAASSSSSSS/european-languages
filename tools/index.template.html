@@ -9,16 +9,21 @@
 <body>
 <div id="map"></div>
 <div id="bar">
- <div><h1>Languages of Europe <small>(WIP)</small></h1><div class="grp" id="hz" role="group" aria-label="Horizon"></div><button id="tg">Family tree</button><button id="wd">Words</button></div>
+ <div><h1>Languages of Europe <small>(WIP)</small></h1><div class="grp" id="hz" role="group" aria-label="Horizon"></div><button id="tg">Language tree</button>
+  <div class="wcol"><div class="row"><button id="wd">Words</button><button id="cl">Cluster</button></div><button id="rs" hidden>Reset map</button></div></div>
  <div><div id="lgw"><button id="lg" class="ic" aria-label="App language: English">EN</button><div id="lgm">English</div></div>
  <button id="mp" class="ic" aria-label="Map type" title="Street / satellite"></button><button id="th" class="ic" aria-label="Switch colour mode"></button></div>
 </div>
 <aside id="box"></aside>
 <aside id="about" role="dialog" aria-label="About this project"><button id="ax" aria-label="Close">×</button><p><b>Beta version.</b> This project is in beta. Its data is not yet factual and must not be used.</p><p>For questions, reports or anything else, <span class="nw">please write to <a href="mailto:aaaaaaasssssss@protonmail.com">aaaaaaasssssss@protonmail.com</a>.</span></p></aside>
-<section id="tree" aria-label="Family tree"><header><input id="tq" type="search" placeholder="Search the family tree"><button id="tx">Close</button></header><div id="tw"><div id="tc"></div></div></section>
+<section id="tree" class="pnl" aria-label="Language tree"><header><input id="tq" type="search" placeholder="Search the language tree"><button id="te" title="Open every branch">Expand all</button><button id="tf" title="Close every branch">Collapse all</button><button id="tx">Close</button></header><div id="tw"><div id="tc"></div></div></section>
+<section id="words" class="pnl" aria-label="Words"><header><b>Words</b><span class="mu" id="wh">The map behind this page shows the selected word.</span><button id="wx">Close</button></header>
+ <div id="wb"><nav id="wsec" aria-label="Sections"></nav><div id="wmain"><div id="wsel"><select id="wsl" aria-label="Word"></select></div><div id="wcols"><div id="wcl"></div><div id="wet"></div></div></div></div></section>
+<section id="cpanel" class="pnl" aria-label="Cluster"><header><div class="grp" id="cm"><button data-m="i">Individual</button><button data-m="a">All</button></div><span class="mu" id="chint"></span><button id="cx">Close</button></header><div id="cbody"></div></section>
 <script src="data/europe-definition.js"></script><script src="data/native.js"></script>
-<script src="data/tree.js"></script><script src="data/areas.js"></script><script src="data/base.js"></script>
+<script src="data/tree.js"></script><script src="data/areas.js"></script><script src="data/base.js"></script><script src="data/words.js"></script><script src="data/edits.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="js/polygon-clipping.min.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
