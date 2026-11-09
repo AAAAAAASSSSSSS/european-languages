@@ -26,7 +26,7 @@ native:{
  baya1255:{main:["Bȯjáṡ"]},
  tran1277:{main:["Graiul ardelenesc"]},cris1238:{main:["Graiul crișean"]},bana1280:{main:["Graiul bănățean"]},
  mara1372:{main:["Graiul maramureșean"]},mold1248:{main:["Graiul moldovenesc"]},munt1238:{main:["Graiul muntenesc"]},
- olte1239:{main:["Graiul oltenesc"]},timo1262:{main:["Ungureni"]},tara1329:{main:["Țărani"]}},
+ olte1239:{main:["Graiul oltenesc"]},"arom-far":{main:["Fãrsherot"]},"arom-gra":{main:["Grãmostean"]},timo1262:{main:["Ungureni"]},tara1329:{main:["Țărani"]}},
 info:{
  east2714:{links:[
   {url:WP+"Eastern_Romance_languages",tip:"Peter R. Petrucci, by contrast, states that Common Romanian had developed into two major dialects by the 10th century, and that Daco-Romanian and Istro-Romanian are descended from the northern dialect, while Megleno-Romanian and Aromanian are descended from the southern dialect."},

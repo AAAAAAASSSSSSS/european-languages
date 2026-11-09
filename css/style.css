@@ -70,3 +70,5 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
 .tb.dots{border-style:dotted;border-left-style:solid;opacity:.75;font-style:italic;cursor:default}
 .nat[data-tip]{cursor:help;text-decoration:underline dotted}
 #box>p:first-child{padding-right:76px}#tip{overflow-wrap:anywhere}
+
+.mixbox{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding-right:76px}.mixbox .mx{min-width:140px;text-align:left}#box .note{font-size:12px;margin:8px 0 0}

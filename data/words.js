@@ -1,38 +1,42 @@
-// WORDS: sections -> words -> entries.
-// entry = [nodeId, form, clusterKey, chain?, borrowed?, source?]
-//   nodeId     id of a language or dialect (tree.js + edits.js); the word is drawn on that node's area minus any descendant that has its own entry
-//   clusterKey key into the word's `clusters`; entries with the same key share a colour and count as "same root" in the distance maths
-//   chain      optional known steps between the cluster root and the modern form, oldest first: [["Proto-Germanic","*watōr"],["Old English","wæter"]]
-//              a step may carry a 3rd item 1 = "borrowed from the previous box" (drawn with a dotted line)
-//   borrowed   optional 1 = the modern form itself was borrowed from the last chain step
-//   source     optional [url, hover text]; every source that has a word gets its own letter in the language's box
-// clusters = { key: { lang: "Proto-Indo-European", form: "*wódr̥" } }  (oldest known root; Semitic etc. when the word came from there)
-const WK="https://en.wiktionary.org/wiki/";
-const VIN=[WK+"vinum","Wiktionary: Latin vīnum, descendants (Aromanian yin/yinu, Istro-Romanian vir, Megleno-Romanian vin)"];
+// WORDS: the sections and the words in them, written as plain comma lists (the app sorts everything alphabetically).
+// To add a word, just add it to a list. Its entries (the actual words in each language) go in data/worddata.js under the id "section/word".
 window.WORDS={sections:[
-{id:"drinks",name:"Drinks",words:[
- {id:"water",name:"Water",clusters:{A:{lang:"Proto-Indo-European",form:"*h₂ekʷeh₂"}},entries:[
-  ["arom1237","apã","A",[["Proto-Italic","*akʷā"],["Latin","aqua"]],0,[WK+"ap%C3%A3","Wiktionary: apã (Aromanian)"]],
-  ["istr1245","åpe","A",[["Proto-Italic","*akʷā"],["Latin","aqua"]],0,[WK+"%C3%A5pe","Wiktionary: åpe (Istro-Romanian)"]]]},
- {id:"beer",name:"Beer",clusters:{},entries:[]},
- {id:"wine",name:"Wine",clusters:{A:{lang:"Proto-Italic",form:"*wīnom"}},entries:[
-  ["arom1237","yin","A",[["Latin","vīnum"]],0,VIN],
-  ["istr1245","vir","A",[["Latin","vīnum"]],0,VIN],
-  ["megl1237","vin","A",[["Latin","vīnum"]],0,VIN]]}]},
-{id:"fruits",name:"Fruits",words:[
- {id:"apple",name:"Apple",clusters:{},entries:[]},
- {id:"orange",name:"Orange",clusters:{},entries:[]},
- {id:"banana",name:"Banana",clusters:{},entries:[]},
- {id:"lemon",name:"Lemon",clusters:{},entries:[]},
- {id:"grape",name:"Grape",clusters:{},entries:[]},
- {id:"olive",name:"Olive",clusters:{},entries:[]},
- {id:"strawberry",name:"Strawberry",clusters:{},entries:[]}]},
-{id:"vegetables",name:"Vegetables",words:[
- {id:"cucumber",name:"Cucumber",clusters:{},entries:[]},
- {id:"potato",name:"Potato",clusters:{},entries:[]},
- {id:"garlic",name:"Garlic",clusters:{},entries:[]},
- {id:"onion",name:"Onion",clusters:{A:{lang:"Latin",form:"cēpa"}},entries:[
-  ["arom1237","tseapã","A",[],0,[WK+"tseap%C3%A3","Wiktionary: tseapã (Aromanian), inherited from Latin cēpa"]]]},
- {id:"tomato",name:"Tomato",clusters:{},entries:[]},
- {id:"carrot",name:"Carrot",clusters:{},entries:[]}]}
+{id:"animals",name:"Animals",words:"Bear, Cat, Cow, Deer, Dog, Donkey, Ermine, Ferret, Fox, Giraffe, Goat, Hare, Horse, Jaguar, Kangaroo, Lemur, Leopard, Lion, Marten, Mouse, Otter, Panda, Panther, Pig, Rabbit, Red panda, Reindeer, Rhinoceros, Sheep, Tiger, Weasel, Wild boar, Wolf, Zebra"},
+{id:"birds",name:"Birds",words:"Bird, Buzzard, Chicken, Crow, Duck, Eagle, Jay, Magpie, Ostrich, Pelican, Pigeon, Raven, Robin, Rooster, Sparrow, Stork, Swallow, Swan, Vulture, Wing, Woodpecker"},
+{id:"sea",name:"Fish & sea life",words:"Anchovy, Carp, Catfish, Cod, Dolphin, Eel, Fish, Herring, Jellyfish, Mackerel, Narwhal, Octopus, Cuttlefish, Orca, Perch, Pike, Roach, Salmon, Sardine, Sea bass, Shark, Trout, Whale"},
+{id:"insects",name:"Insects & small creatures",words:"Ant, Bee, Beetle, Butterfly, Dragonfly, Fly, Insect, Mosquito, Roach, Snail, Spider, Worm"},
+{id:"reptiles",name:"Reptiles & amphibians",words:"Crocodile, Frog, Lizard, Snake, Tadpole, Turtle"},
+{id:"body",name:"Body",words:"Arm, Back, Beard, Blood, Bone, Breast, Butt, Ear, Eye, Finger, Foot, Freckles, Hair, Hand, Head, Heart, Leg, Lip, Moustache, Mouth, Nail, Neck, Nipple, Nose, Penis, Phallus, Skin, Thumb, Tongue, Tooth, Vagina"},
+{id:"vulgar",name:"Vulgar",words:"Ass, Boobs, Dick, Pussy"},
+{id:"family",name:"Family & people",words:"Aunt, Baby, Boyfriend, Brother, Child, Father, Girlfriend, Grandchild, Grandfather, Grandmother, Lover, Man, Mother, Nephew, Niece, Sister, Uncle, Woman"},
+{id:"life",name:"Life & relationships",words:"Bride, Death, Divorce, Groom, Hate, Life, Love, Marriage, Sex"},
+{id:"society",name:"Society & politics",words:"Castle, City, Country, Emperor, Empire, Empress, Enemy, Engineer, Family name, Foreigner, Friend, Given name, King, Kingdom, Leader, Master, Peace, Peer, President, Prince, Princess, Queen, Rival, Slave, Student, Teacher, Title, Town, Village, War, Work, Doctor"},
+{id:"religion",name:"Religion & mythology",words:"Angel, Church, Demon, Devil, Dragon, God, Heaven, Hell, Priest, Religion"},
+{id:"weapons",name:"Weapons & war",words:"Arrow, Bow, Bullet, Gun, Gunpowder, Harpoon, Powder, Rifle, Spear, Sword, Tank"},
+{id:"tools",name:"Tools & machines",words:"Axe, Cable, Clock, Elevator, Ink, Lightbulb, Machine, Map, Pen, Pencil, Phone, Pickaxe, Shovel, Book, Paper"},
+{id:"home",name:"Home & objects",words:"Bathroom, Bed, Box, Chair, Chest, Glass, Glasses, Grave, Monocle, Mug, Picture, Pillow, Rag, Roof, Sink, Statue, Table, Thing, Tissue, Tower, Trash, Window"},
+{id:"clothing",name:"Clothing",words:"Boots, Socks"},
+{id:"medicine",name:"Medicine",words:"Medicine, Pill"},
+{id:"transport",name:"Transport",words:"Bicycle, Boat, Bus, Car, Motorcycle, Plane, Ship, Train, Tram"},
+{id:"food",name:"Food",words:"Cake, Candy, Cheese, Chocolate, Egg, Ice cream, Meat, Yogurt"},
+{id:"spices",name:"Spices & seasoning",words:"Cinnamon, Pepper, Salt, Vanilla"},
+{id:"drinks",name:"Drinks",words:"Beer, Coffee, Drink, Juice, Lemonade, Milk, Tea, Water, Wine"},
+{id:"fruits",name:"Fruits",words:"Apple, Avocado, Banana, Blackberry, Blueberry, Cherry, Coconut, Dates, Fig, Grape, Lemon, Mandarin, Mango, Melon, Nut, Olive, Orange, Papaya, Peach, Pear, Pineapple, Plantain, Plum, Raspberry, Sour cherry, Strawberry, Watermelon"},
+{id:"vegetables",name:"Vegetables",words:"Broccoli, Brown beans, Cabbage, Carrot, Cauliflower, Chilli pepper, Cucumber, Eggplant, Garlic, Green beans, Green peas, Green pepper, Lettuce, Onion, Potato, Pumpkin, Spinach, Sweet potato, Tomato, Yam, Zucchini"},
+{id:"trees",name:"Trees",words:"Alder, Ash, Aspen, Beech, Cherry, Chestnut, Fir, Hornbeam, Larch, Maple, Oak, Pine, Rowan, Spruce, Tree, Walnut, Willow, Yew"},
+{id:"plants",name:"Plants",words:"Bark, Flower, Fruit, Grass, Leaves, Pinecone, Root, Seed, Vegetable, Algae"},
+{id:"herbs",name:"Herbs & flowers",words:"Chamomile, Chrysanthemum, Daisy, Ginger, Hibiscus, Lavender, Lemongrass, Lily, Mint, Orchid, Peony, Peppermint, Rose, Sunflower, Tulip"},
+{id:"geography",name:"Geography",words:"Africa, America, Antarctica, Asia, Europe, Hill, Island, Lake, Mountain, Ocean, Oceania, Peninsula, Plain, Planet, River, Sand, Valley, Volcano, World, Dirt"},
+{id:"nature",name:"Nature & weather",words:"Air, Ash, Cloud, Dark, Electricity, Fire, Ice, Light, Moon, Shadow, Sky, Smoke, Star, Storm, Sun, Thunder"},
+{id:"materials",name:"Materials & metals",words:"Brick, Coal, Copper, Gold, Iron, Silver, Stone, Wood, Wool"},
+{id:"time",name:"Time",words:"Day, Hour, Minute, Month, Second, Time, Week, Year"},
+{id:"calendar",name:"Days & months",words:"Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, January, February, March, April, May, June, July, August, September, October, November, December"},
+{id:"numbers",name:"Numbers",words:"One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Hundred, Thousand, Million"},
+{id:"colours",name:"Colours",words:"Black, Blank, Blue, Brown, Green, Grey, Orange, Pink, Purple, Red, White, Yellow, Colour"},
+{id:"qualities",name:"Qualities",words:"Bad, Beautiful, Cold, Dry, Evil, Fast, Fat, Good, Hot, Old, Short, Slow, Sour, Sweet, Tall, Thin, Ugly, Wet, Young"},
+{id:"emotions",name:"Emotions & states",words:"Angry, Awake, Frown, Happy, Joke, Sad, Sleeping, Smile"},
+{id:"position",name:"Position & direction",words:"Back, Close, Down, East, Far, Front, High, Inside, Left, Low, North, Outside, Right, South, Up, West"},
+{id:"verbs",name:"Verbs",words:"To be, To be born, To box, To brag, To charge, To close, To cool, To cry, To damage, To die, To drink, To drop, To eat, To exist, To fight, To fly, To give birth, To hear, To heat, To help, To hurt, To know, To laugh, To live, To open, To pick up, To read, To run, To scream, To see, To sing, To smoke, To speak, To steal, To swim, To take a bath, To throw, To touch, To understand, To walk"},
+{id:"greetings",name:"Greetings & courtesy",words:"Goodbye, Hello, No, Please, Sorry, Thanks, Yes"},
+{id:"abstract",name:"Abstract & misc",words:"Discovery, Drop, Everything, Length, Nothing, Sound, Tobacco, Width"}
 ]};

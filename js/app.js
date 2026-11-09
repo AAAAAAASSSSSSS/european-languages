@@ -15,8 +15,9 @@ const PC=window.polygonClipping, safe=(f,...a)=>{try{return f(...a)}catch(e){ret
 const AR={};
 const P=id=>AR[id]||(AR[id]=(AREAS[id]||[]).map(po=>po.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o})));
 const toGJ=po=>po.map(r=>r.map(([la,ln])=>[ln,la])), fromGJ=mp=>mp.map(po=>po.map(r=>r.map(([x,y])=>[y,x])));
+const MZ=(window.MIXED||[]).map(m=>({ids:m.ids,area:m.area.map(po=>po.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o}))}));
 const SH={};
-function shape(n){if(n.id in SH)return SH[n.id];const parts=P(n.id).map(toGJ);n.kids.forEach(k=>{const s=shape(k);if(s)s.forEach(po=>parts.push(toGJ(po)))});
+function shape(n){if(n.id in SH)return SH[n.id];const parts=P(n.id).map(toGJ);MZ.forEach(m=>m.ids.includes(n.id)&&m.area.forEach(po=>parts.push(toGJ(po))));n.kids.forEach(k=>{const s=shape(k);if(s)s.forEach(po=>parts.push(toGJ(po)))});
  let r=null;if(parts.length===1)r=fromGJ(parts);else if(parts.length){const u=safe(PC.union,...parts);r=u?fromGJ(u):fromGJ(parts)}
  return SH[n.id]=r&&r.length?r:null}
 const has=n=>!!shape(n), exp=n=>n.kids.some(has), NOSHAPES=!Object.keys(AREAS).length, ok=n=>has(n)||(NOSHAPES&&n.name!=="[…]");
@@ -33,7 +34,9 @@ const dark=()=>H.dataset.theme==="dark";
 const col=n=>`hsl(${(n.i*137.508)%360},${dark()?66:60}%,${dark()?62:40}%)`;
 // cluster colours: red, blue, green, yellow, orange, then more (no black / white)
 const PALC=["#e6194b","#2f6fe0","#2fa84f","#f2cf1d","#f58231","#911eb4","#17b8b8","#e056a8","#8b5a2b","#7f9a1c"];
-const PAL=i=>i<PALC.length?PALC[i]:`hsl(${(i*137.508)%360},65%,50%)`;
+const hex=(h,s,l)=>{s/=100;l/=100;const f=n=>{const k=(n+h/30)%12,a=s*Math.min(l,1-l);return Math.round(255*(l-a*Math.max(-1,Math.min(k-3,9-k,1)))).toString(16).padStart(2,"0")};return"#"+f(0)+f(8)+f(4)};
+const PAL=i=>i<PALC.length?PALC[i]:hex((i*137.508)%360,65,50);
+const shade=(c,k)=>{if(!k)return c;const t=Math.min(.75,k*.45),v=[1,3,5].map(i=>parseInt(c.slice(i,i+2),16));return"#"+v.map(x=>Math.round(x+(255-x)*t).toString(16).padStart(2,"0")).join("")};
 const map=L.map("map",{zoomControl:false,minZoom:3,maxZoom:14,renderer:L.canvas({padding:.4})}).setView([53,20],4);
 L.control.zoom({position:"bottomright"}).addTo(map);
 new(L.Control.extend({options:{position:"bottomright"},onAdd(){const d=L.DomUtil.create("div","leaflet-bar leaflet-control"),a=L.DomUtil.create("a","infobtn",d);a.href="#";a.textContent="i";a.title="About this project";a.setAttribute("role","button");
@@ -50,9 +53,18 @@ function tiles(){tl.forEach(x=>x.remove());tl=[];
  else tl.push(L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap contributors"}));
  tl.forEach(x=>x.addTo(map));map.getContainer().classList.toggle("inv",dark()&&MODE==="street")}
 const vis=n=>has(n)&&(!n.p||E.has(n.p))&&!E.has(n.id);
-// ---- words: which node carries which word ----
-const entFor=n=>{while(n){const e=W.ents.get(n.id);if(e)return e;n=N[n.p]}return null};   // own word, else the nearest ancestor's
-function computeWS(){W.ws=new Map();const below={};W.entAnc=new Set();
+// ---- striped fills (a place with two words / a place shared by several dialects) are SVG patterns ----
+const SVGR=L.svg({padding:.4});SVGR.addTo(map);const NS="http://www.w3.org/2000/svg",SPID=new Map();let DEFS=null;
+function stripe(cols){const key=cols.join("|");if(SPID.has(key)&&DEFS&&DEFS.isConnected)return SPID.get(key);
+ if(!DEFS||!DEFS.isConnected){DEFS=document.createElementNS(NS,"defs");SVGR._container.insertBefore(DEFS,SVGR._container.firstChild);SPID.clear()}
+ const id="st"+SPID.size,p=document.createElementNS(NS,"pattern"),w=5;p.setAttribute("id",id);p.setAttribute("patternUnits","userSpaceOnUse");p.setAttribute("width",w*cols.length);p.setAttribute("height",10);p.setAttribute("patternTransform","rotate(45)");
+ cols.forEach((c,i)=>{const r=document.createElementNS(NS,"rect");r.setAttribute("x",i*w);r.setAttribute("width",w);r.setAttribute("height",10);r.setAttribute("fill",c);p.append(r)});DEFS.append(p);SPID.set(key,id);return id}
+function poly(po,o,cols){if(cols&&cols.length>1){const id=stripe(cols),p=L.polygon(po,{...o,renderer:SVGR,fillOpacity:.75}).addTo(layer);p._path&&p._path.setAttribute("fill",`url(#${id})`);return p}
+ return L.polygon(po,o).addTo(layer)}
+// ---- words: which node carries which word (a node may carry several) ----
+const entFor=n=>{while(n){const e=W.ents.get(n.id);if(e)return e;n=N[n.p]}return null};   // own words, else the nearest ancestor's
+const forms=es=>[...new Set(es.map(e=>e.form))].join(", "), colsOf=es=>[...new Set(es.map(e=>e.color))];
+function computeWS(){W.ws=new Map();W.sc=new Map();const below={};W.entAnc=new Set();
  W.ents.forEach((e,id)=>{below[id]=[];anc(N[id]).forEach(a=>W.entAnc.add(a.id))});
  W.ents.forEach((e,id)=>anc(N[id]).forEach(a=>W.ents.has(a.id)&&below[a.id].push(id)));
  W.ents.forEach((e,id)=>{const base=shape(N[id]);if(!base)return;let r=base;
@@ -61,21 +73,27 @@ function computeWS(){W.ws=new Map();const below={};W.entAnc=new Set();
   if(r.length)W.ws.set(id,r)});
  W.cls.forEach(c=>{const ps=c.ids.map(id=>W.ws.get(id)).filter(Boolean).map(s=>s.map(toGJ));
   c.u=ps.length?(()=>{const u=safe(PC.union,...ps);return fromGJ(u||ps.flat())})():null})}
+// with a word selected only places that have a version of that word can be shown; a place that only has descendants with the word is cut down to those descendants
+function wshape(n){if(entFor(n))return shape(n);if(!W.entAnc.has(n.id))return null;if(W.sc.has(n.id))return W.sc.get(n.id);
+ const ps=[];W.ws.forEach((mp,id)=>{if(anc(N[id]).includes(n))ps.push(mp.map(toGJ))});const u=ps.length?safe(PC.union,...ps):null;const r=u?fromGJ(u):null;W.sc.set(n.id,r);return r}
 // ---- drawing ----
-function addPoly(n,po,o,tip){const a=labelOf(po).area;L.polygon(po,o).bindTooltip(tip,{sticky:true}).on("click",()=>pick(n.id)).addTo(layer);return a}
 function draw(){layer.clearLayers();items=[];
  if(W&&!HZ){drawWord();return drawLabels()}
- const parts=[];nodes.filter(vis).forEach(n=>(shape(n)||[]).forEach(po=>parts.push({n,po,a:labelOf(po).area})));parts.sort((x,y)=>y.a-x.a);
- parts.forEach(({n,po})=>{const e=W&&entFor(n),c=e?e.color:col(n),sel=n.id===S,sc=F(n,"s");
-  L.polygon(po,{color:c,fillColor:c,weight:sel?3.2:1.8,opacity:.95,fillOpacity:sc?.05:sel?.3:.13,dashArray:sc?"5 5":null}).bindTooltip(n.name+(nat(n)?" "+nat(n):"")+(e?": "+e.form:""),{sticky:true}).on("click",()=>pick(n.id)).addTo(layer);
-  items.push(e?{po,txt:e.form,sub:n.name,sel:n.id===S}:{po,txt:n.name,sub:nat(n),sel:n.id===S})});
+ const parts=[];nodes.filter(vis).forEach(n=>(W?wshape(n):shape(n))&&(W?wshape(n):shape(n)).forEach(po=>parts.push({n,po,a:labelOf(po).area})));parts.sort((x,y)=>y.a-x.a);
+ parts.forEach(({n,po})=>{const es=W&&entFor(n),cols=es?colsOf(es):[col(n)],sel=n.id===S,sc=F(n,"s");
+  poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.2:1.8,opacity:.95,fillOpacity:sc?.05:sel?.3:.13,dashArray:sc?"5 5":null},es?cols:null).bindTooltip(n.name+(nat(n)?" "+nat(n):"")+(es?": "+forms(es):""),{sticky:true}).on("click",()=>pick(n.id));
+  items.push(es?{po,txt:forms(es),sub:n.name,sel}:{po,txt:n.name,sub:nat(n),sel})});
+ if(!W)MZ.forEach(m=>{if(!m.ids.every(id=>vis(N[id])))return;const ids=m.ids.slice().sort(byName),nm=ids.map(id=>N[id].name).join(" + "),cols=ids.map(id=>col(N[id])),sel=ids.includes(S);
+  m.area.forEach(po=>{poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.2:1.4,opacity:.95,fillOpacity:.75},cols).bindTooltip(nm,{sticky:true}).on("click",()=>openMix(ids));items.push({po,txt:nm,sub:"",sel:false})})});
  drawLabels()}
-// word mode: every language/dialect with a word is its own polygon (children with their own word cut out), coloured by cluster; then one outline per cluster
+// a place shared by several dialects: no single language gets selected, the box offers each of them as a button
+function openMix(ids){S=null;draw();tree();showBox(`<div class="mixbox">${ids.map(id=>`<button class="mx" data-id="${id}">${esc(N[id].name)}</button>`).join("")}</div>`,true)}
+// word mode: every language/dialect with a word is its own polygon (children with their own word cut out), coloured by cluster (striped when it has several roots/words); then one outline per cluster
 function drawWord(){const parts=[];
  W.ws.forEach((mp,id)=>mp.forEach(po=>parts.push({id,po,a:labelOf(po).area})));parts.sort((x,y)=>y.a-x.a);
- parts.forEach(({id,po})=>{const n=N[id],e=W.ents.get(id),sel=id===S;
-  L.polygon(po,{color:e.color,fillColor:e.color,weight:sel?3.6:1.6,opacity:.95,fillOpacity:sel?.6:.4}).bindTooltip(`${n.name}: ${e.form}`,{sticky:true}).on("click",()=>pick(id)).addTo(layer);
-  items.push({po,txt:e.form,sub:n.name,sel})});
+ parts.forEach(({id,po})=>{const n=N[id],es=W.ents.get(id),sel=id===S,cols=colsOf(es);
+  poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.6:1.6,opacity:.95,fillOpacity:sel?.6:.4},cols).bindTooltip(`${n.name}: ${forms(es)}`,{sticky:true}).on("click",()=>pick(id));
+  items.push({po,txt:forms(es),sub:n.name,sel})});
  W.cls.forEach(c=>{if(!c.u)return;c.u.forEach(po=>L.polygon(po,{color:c.color,weight:4.5,fill:false,opacity:1,interactive:false}).addTo(layer));
   const big=c.u.slice().sort((x,y)=>labelOf(y).area-labelOf(x).area)[0],r=c.root;
   items.push({po:big,txt:r.form||r.lang||"?",sub:r.form?r.lang:"",cls:"root",sel:false,color:c.color})})}
@@ -88,10 +106,12 @@ function fitTo(mps){const pts=mps.flatMap(mp=>mp.flatMap(po=>po[0]));if(pts.leng
 function fly(n){const s=shape(n);if(s)fitTo([s])}
 const drop=n=>{E.delete(n.id);n.kids.forEach(drop)};
 function pick(id){S=id;draw();box();fly(N[id]);tree()}            // select only, never breaks
-function go(id){const n=N[id];if(W&&!HZ)return pick(id);anc(n).forEach(a=>E.add(a.id));if(has(n))drop(n);S=id;draw();box();fly(n);tree()} // breaks parents, rejoins when an ancestor is clicked
+function go(id){const n=N[id];if(!n||n.name==="[…]")return;anc(n).forEach(a=>OPN.add(a.id));
+ if(!has(n)){S=id;draw();box();tree();return}
+ if(W&&!HZ)return pick(id);anc(n).forEach(a=>E.add(a.id));drop(n);S=id;draw();box();fly(n);tree()} // breaks parents, rejoins when an ancestor is clicked
 window.go=go;
 // ---- info box ----
-function chip(n){if(n.name==="[…]")return`<button class="chip ghost" disabled data-tip="${esc(n.note||"Further Glottolog branches outside this project")}">[…]</button>`;const k=ok(n);return`<button class="chip ${k?"":"ghost"}" ${k?`onclick="go('${n.id}')"`:`disabled title="${F(n,"x")?"Extinct":"No shape on the map yet"}"`}>${F(n,"x")?"† ":""}${n.name}</button>`}
+function chip(n){if(n.name==="[…]")return`<button class="chip ghost" disabled data-tip="${esc(n.note||"Further Glottolog branches outside this project")}">[…]</button>`;return`<button class="chip ${ok(n)?"":"ghost"}" onclick="go('${n.id}')">${F(n,"x")?"† ":""}${esc(n.name)}</button>`}
 const GLURL="https://glottolog.org/resource/languoid/id/";
 const gcode=n=>{while(n&&!n.code)n=N[n.p];return n&&n.code};
 const RETIRED={mol:"retired in 2008, merged into ron, i.e. Romanian"};
@@ -105,13 +125,13 @@ document.addEventListener("pointerout",e=>{if(tipFor&&e.pointerType!=="touch"&&!
 document.addEventListener("focusin",e=>{const el=e.target.closest&&e.target.closest("[data-tip]");el&&showTip(el)});document.addEventListener("focusout",hideTip);
 document.addEventListener("click",e=>{const el=e.target.closest&&e.target.closest("[data-tip]");
  if(lastPT==="touch"&&el&&tipFor!==el){e.preventDefault();showTip(el);return}if(!el||el!==tipFor)hideTip()},true);
-function showBox(html){hideTip();const b=$("#box");b.hidden=false;b.innerHTML=html+`<button id="bxc">Close</button>`;$("#bxc").onclick=closeBox}
+const NOTE="Borders are approximations. Where areas overlap, the less widely spoken language or dialect takes priority over the more widespread one.";
+function showBox(html,bare){hideTip();const b=$("#box");b.hidden=false;b.innerHTML=html+(bare?"":`<p class="mu note">${NOTE}</p>`)+`<button id="bxc">Close</button>`;$("#bxc").onclick=closeBox}
 function closeBox(){$("#box").hidden=true;if(S){S=null;draw();tree()}}
 const hostOf=u=>{try{return new URL(u).hostname}catch(e){return u}};
 const defTip=u=>{try{const x=new URL(u),t=decodeURIComponent(x.pathname.split("/").pop()).replace(/_/g," ");return x.hostname.includes("wikipedia")?`Wikipedia (${x.hostname.split(".")[0]}): ${t}`:x.hostname.includes("glottolog")?`Glottolog: ${t}`:`${x.hostname}: ${t}`}catch(e){return u}};
-const wordsOf=id=>SECS.flatMap(s=>s.words.flatMap(w=>w.entries.filter(e=>e[0]===id).map(e=>({w:w.name,f:e[1],src:e[5]}))));
 // every link in the box is a letter in brackets: [a], [b], [c] ... in order of appearance; the hover holds the explanation
-function box(){const n=N[S];if(!n||n.name==="[…]")return;const up=N[n.p],bd=[],gc=gcode(n),inf=INFO[n.id]||{},K=[];
+function box(){const n=N[S];if(!n||n.name==="[…]")return;const up=N[n.p],bd=[],gc=F(n,"p")&&!n.code?null:gcode(n),inf=INFO[n.id]||{},K=[];
  const ref=(u,t)=>{const l=String.fromCharCode(97+K.length);K.push({l,u,t});return refA(l,u,t)};
  const refA=(l,u,t)=>u?`<sup><a class="rf" href="${esc(u)}" target="_blank" rel="noopener" data-tip="${esc(t)}" aria-label="${esc(t)}">[${l}]</a></sup>`:`<sup><span class="rf" tabindex="0" data-tip="${esc(t)}">[${l}]</span></sup>`;
  const m=/^ISO 639-3: (\w{3})$/.exec(n.note||""),code=m&&m[1];
@@ -120,12 +140,12 @@ function box(){const n=N[S];if(!n||n.name==="[…]")return;const up=N[n.p],bd=[]
   +(inf.links||[]).map(l=>ref(l.url,l.tip||(l.url?defTip(l.url):""))).join("");
  const lnk=i=>K[(gc?1:0)+(code?1:0)+i];
  if(F(n,"x"))bd.push("extinct");if(F(n,"d"))bd.push("disputed");if(F(n,"s"))bd.push("dispersed");if(F(n,"n"))bd.push("outside Europe");
- (inf.badges||[]).forEach(b=>bd.push(b));if(F(n,"p"))bd.push("project-defined, not in Glottolog");if(!NOSHAPES&&!has(n)&&!F(n,"n")&&!F(n,"x"))bd.push("no shape yet");
+ (inf.badges||[]).forEach(b=>bd.push(b));
  const e=W&&W.ents.get(n.id),facts=(inf.facts||[]).map(f=>{const r=f.ref!=null&&lnk(f.ref);return`<p>${esc(f.t)}${r?refA(r.l,r.u,r.t):""}</p>`}).join("");
- const ws=wordsOf(n.id),wl=ws.length?`<p>${ws.map(x=>{let r="";if(x.src){let k=K.find(q=>q.u===x.src[0]);r=k?refA(k.l,k.u,k.t):ref(x.src[0],x.src[1])}return`${esc(x.w)}: <b>${esc(x.f)}</b>${r}`}).join("; ")}</p>`:"";
+ const wl=e?`<p>${esc(W.w.name)}: <b>${esc(forms(e))}</b>${[...new Map(e.filter(x=>x.src).map(x=>[x.src[0],x.src])).values()].map(s=>{const k=K.find(q=>q.u===s[0]);return k?refA(k.l,k.u,k.t):ref(s[0],s[1])}).join("")} <button onclick="wordsAt('${n.id}')">Etymology</button></p>`:"";
  showBox(`<h2>${esc(n.name)}${refs}</h2>${nat(n)?`<div class="nat mu" ${natAll(n)?`data-tip="${esc(natAll(n))}" tabindex="0"`:""}>${esc(nat(n))}</div>`:""}
  <p>${bd.map(b=>`<span class="badge">${esc(b)}</span>`).join("")}</p>${facts}
- ${e?`<p>${esc(W.w.name)}: <b>${esc(e.form)}</b> <button onclick="wordsAt('${n.id}')">Etymology</button></p>`:""}${wl}
+ ${wl}
  <p>Descended from: ${up?chip(up):'<span class="mu">top-level family in Glottolog</span>'}</p>
  ${n.note&&!code?`<p class="mu">${esc(n.note)}</p>`:""}
  ${n.kids.length?`<p>Descendants: ${n.kids.map(chip).join("")}</p>`:'<p class="mu">No further breakdown recorded.</p>'}`)}
@@ -134,7 +154,7 @@ const HB={};
 function setH(m,b){E=new Set();nodes.forEach(n=>{if(!exp(n))return;
  if(m==="B"?!n.p:m==="L"?!F(n,"L")&&!F(n,"D"):m==="D")E.add(n.id)});
  HZ=m;LASTH=m;S=null;draw();showBox('<p class="mu">Click a shape to open it. Click one of its descendants in this box to break it up; click its ancestor to join it again.</p>');
- document.querySelectorAll("#hz button").forEach(x=>x.classList.toggle("on",x===b));map.setView([53,20],4);tree()}
+ document.querySelectorAll("#hz button").forEach(x=>x.classList.toggle("on",x===b));tree()}
 [["Families","F"],["Branches","B"],["Languages","L"],["Dialects","D"]].forEach(([t,m],i)=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>setH(m,b);HB[m]=b;$("#hz").append(b);if(!i)b.classList.add("on")});
 // ---- panels: only one open at a time ----
 const panels=["#tree","#words","#cpanel"];
@@ -158,7 +178,7 @@ function tree(center){hideTip();const t=$("#tree");if(!t.classList.contains("ope
    if(hl)ph+=`<path class="hi" d="${d}"/>`;else pn+=`<path class="${!it.ph&&F(n,"d")?"dot":""}" d="${d}"/>`}   // the pink branch is drawn last, so it always wins
   if(it.ph){boxes+=`<button class="tb ph" style="left:${it.x}px;top:${it.y}px" data-id="${n.id}" data-ph="1" data-tip="Open the subdivisions of ${esc(n.name)}"><span>[…]</span></button>`;return}
   const k=ok(n),m=q&&n.name.toLowerCase().includes(q),en=W&&W.ents.get(n.id),dots=n.name==="[…]",ta=natAll(n);
-  boxes+=`<button class="tb ${k?"":"ghost"} ${dots?"dots":""} ${n.id===S?"sel":""} ${q?(m?"hit":"dim"):""}" style="left:${it.x}px;top:${it.y}px;border-left-color:${col(n)}" data-id="${n.id}" ${dots?`data-tip="${esc(n.note||"Further Glottolog branches outside this project")}"`:`title="${esc(n.name)}${k?"":F(n,"x")?" (extinct)":" (no polygon)"}"`}><span>${F(n,"x")?"† ":""}${esc(n.name)}</span>${nat(n)||en?`<small class="r"><span ${ta?`data-tip="${esc(ta)}"`:""}>${esc(nat(n))}</span>${en?`<i>(${esc(en.form)})</i>`:""}</small>`:""}</button>`;
+  boxes+=`<button class="tb ${k?"":"ghost"} ${dots?"dots":""} ${n.id===S?"sel":""} ${q?(m?"hit":"dim"):""}" style="left:${it.x}px;top:${it.y}px;border-left-color:${col(n)}" data-id="${n.id}" ${dots?`data-tip="${esc(n.note||"Further Glottolog branches outside this project")}"`:`title="${esc(n.name)}${k?"":F(n,"x")?" (extinct)":" (no polygon)"}"`}><span>${F(n,"x")?"† ":""}${esc(n.name)}</span>${nat(n)||en?`<small class="r"><span ${ta?`data-tip="${esc(ta)}"`:""}>${esc(nat(n))}</span>${en?`<i>(${esc(forms(en))})</i>`:""}</small>`:""}</button>`;
   if(n.kids.length)boxes+=`<button class="tg2 ${hi.has(n.id)?"hi":""}" style="left:${it.x+154}px;top:${it.y+9}px" data-t="${n.id}" title="${OPN.has(n.id)?"Close":"Open"} the subdivisions of ${esc(n.name)}">${OPN.has(n.id)?"[-]":"[+]"}</button>`});
  $("#tc").style.cssText=`width:${w}px;height:${h}px`;$("#tc").innerHTML=`<svg width="${w}" height="${h}">${pn}${ph}</svg>${boxes}`;
  if(center&&S){const f=$(`#tc .tb[data-id="${S}"]`);f&&$("#tw").scrollTo({left:Math.max(0,f.offsetLeft-$("#tw").clientWidth/2+77),top:Math.max(0,f.offsetTop-$("#tw").clientHeight/2+19)})}
@@ -167,7 +187,7 @@ $("#tc").addEventListener("click",e=>{const g=e.target.closest(".tg2");
  if(g){const id=g.dataset.t;OPN.has(id)?OPN.delete(id):OPN.add(id);return tree()}
  const b=e.target.closest(".tb");if(!b)return;const n=N[b.dataset.id];
  if(b.dataset.ph){OPN.add(n.id);return tree()}
- if(n.name==="[…]")return;if(has(n)){closeP("#tree");go(n.id)}else{S=n.id;box();tree()}});
+ go(n.id)});
 $("#tg").onclick=()=>{const o=!isOpen("#tree");panels.forEach(closeP);if(o){$("#tree").classList.add("open");tree(true)}};$("#tx").onclick=()=>closeP("#tree");
 $("#te").onclick=()=>{nodes.forEach(n=>n.kids.length&&OPN.add(n.id));tree()};$("#tf").onclick=()=>{OPN.clear();tree()};
 $("#tq").oninput=()=>{const q=$("#tq").value.trim().toLowerCase();if(q)nodes.forEach(n=>n.name.toLowerCase().includes(q)&&anc(n).forEach(a=>OPN.add(a.id)));tree()};
@@ -175,21 +195,23 @@ addEventListener("keydown",e=>{if(e.key==="Escape"){panels.forEach(closeP)}});
 let dr=null;const tw=$("#tw");tw.addEventListener("pointerdown",e=>{if(e.target.closest(".tb,.tg2"))return;dr={x:e.clientX,y:e.clientY,l:tw.scrollLeft,t:tw.scrollTop};tw.classList.add("drag")});
 addEventListener("pointermove",e=>{if(dr){tw.scrollLeft=dr.l-(e.clientX-dr.x);tw.scrollTop=dr.t-(e.clientY-dr.y)}});addEventListener("pointerup",()=>{dr=null;tw.classList.remove("drag")});
 // ---- words page ----
-const SECS=(window.WORDS?WORDS.sections:[]).slice().sort((a,b)=>a.name.localeCompare(b.name));SECS.forEach(s=>s.words.sort((a,b)=>a.name.localeCompare(b.name)));
+const WD=window.WORDDATA||{};
+const SECS=(window.WORDS?WORDS.sections:[]).map(s=>({id:s.id,name:s.name,words:s.words.split(",").map(x=>x.trim()).filter(Boolean).map(nm=>{const id=s.id+"/"+nm.toLowerCase().replace(/[^a-z0-9]+/g,"-"),d=WD[id]||{};return{id,name:nm,clusters:d.clusters||{},entries:d.entries||[]}}).sort((x,y)=>x.name.localeCompare(y.name))})).sort((x,y)=>x.name.localeCompare(y.name));
 let curSec=null;
 function renderSecs(){$("#wsec").innerHTML=SECS.map(s=>`<button data-s="${s.id}" class="${curSec&&curSec.id===s.id?"on":""}">${esc(s.name)}</button>`).join("")||'<span class="mu">No sections yet.</span>';
  const sl=$("#wsl");sl.innerHTML=curSec?`<option value="">Choose a word…</option>`+curSec.words.map(w=>`<option value="${w.id}" ${W&&W.w===w?"selected":""}>${esc(w.name)}</option>`).join(""):`<option value="">Choose a section on the left</option>`;sl.disabled=!curSec}
 $("#wsec").onclick=e=>{const b=e.target.closest("button");if(!b)return;curSec=SECS.find(s=>s.id===b.dataset.s);renderSecs();if(!W||W.sec!==curSec)renderPage()};
 $("#wsl").onchange=e=>{const w=curSec&&curSec.words.find(x=>x.id===e.target.value);if(w)setWord(curSec,w)};
 $("#wd").onclick=()=>{const o=!isOpen("#words");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#words").classList.add("open");renderSecs();renderPage()}};$("#wx").onclick=()=>closeP("#words");
-function setWord(sec,w){const ents=new Map();w.entries.forEach(([id,form,key,chain,bor,src])=>{if(N[id])ents.set(id,{id,form,key,chain,bor,src})});
- const g={};ents.forEach(e=>(g[e.key]=g[e.key]||[]).push(e.id));
- const cls=Object.entries(g).map(([key,ids])=>({key,ids:ids.sort(byName),root:w.clusters[key]||{lang:"?",form:""}}));
- cls.sort((a,b)=>b.ids.length-a.ids.length||byName(a.ids[0],b.ids[0]));   // biggest cluster first, ties: whose first language comes first alphabetically
- cls.forEach((c,i)=>{c.i=i;c.color=PAL(i);c.ids.forEach(id=>ents.get(id).color=c.color)});
- W={sec,w,ents,cls};WSEL=null;HZ=null;E=new Set();S=null;computeWS();
+function setWord(sec,w){const ents=new Map(),all=[];
+ w.entries.forEach(([id,form,key,chain,bor,src])=>{if(!N[id])return;const e={id,form,key,chain,bor,src,uid:all.length};all.push(e);if(!ents.has(id))ents.set(id,[]);ents.get(id).push(e)});
+ const g={};all.forEach(e=>(g[e.key]=g[e.key]||[]).push(e));
+ const cls=Object.entries(g).map(([key,es])=>{es.sort((x,y)=>byName(x.id,y.id)||x.form.localeCompare(y.form));return{key,es,ids:[...new Set(es.map(e=>e.id))].sort(byName),root:w.clusters[key]||{lang:"?",form:""}}});
+ cls.sort((x,y)=>y.ids.length-x.ids.length||byName(x.ids[0],y.ids[0]));   // biggest cluster first, ties: whose first language comes first alphabetically
+ cls.forEach((c,i)=>{c.i=i;c.color=PAL(i);const used={};c.es.forEach(e=>{used[e.id]=used[e.id]||0;e.color=shade(c.color,used[e.id]++)})});  // two words of one cluster in one place = two shades of its colour
+ W={sec,w,ents,all,cls};WSEL=null;HZ=null;E=new Set();S=null;computeWS();
  document.querySelectorAll("#hz button").forEach(x=>x.classList.remove("on"));$("#rs").hidden=false;$("#wd").classList.add("on");
- draw();fitTo([...W.ws.values()]);showBox('<p class="mu">Word mode: each shape carries its word, shapes of one cluster share a colour, and the thick outline carries the oldest known root.</p>');
+ draw();fitTo([...W.ws.values()]);showBox('<p class="mu">Word mode: each shape carries its word, shapes of one cluster share a colour, and the thick outline carries the oldest known root. A place with two words is striped.</p>');
  renderSecs();renderPage();tree()}
 function noData(){const out=[],walk=n=>{if(!has(n)||W.ents.has(n.id))return;
  if(!W.entAnc.has(n.id)&&(F(n,"L")||F(n,"D"))){out.push(n.name);return}n.kids.forEach(walk)};
@@ -197,19 +219,19 @@ function noData(){const out=[],walk=n=>{if(!has(n)||W.ents.has(n.id))return;
 function renderPage(){const c=$("#wcl");$("#wet").innerHTML="";
  if(!W){c.innerHTML=`<p class="mu">${curSec?"Choose a word in the menu above.":"Choose a section on the left, then a word."}</p>`;return}
  const w=W.w,nd=noData();
- c.innerHTML=`<h3>${esc(w.name)}</h3>`+(W.cls.map(k=>`<div class="cg" style="border-left-color:${k.color}"><h4>${esc(k.root.form||k.root.lang||"?")} <small>${esc(k.root.form?k.root.lang:"")} · ${k.ids.length}</small></h4>${k.ids.map(id=>`<button class="wl ${id===WSEL?"on":""}" data-id="${id}">${esc(N[id].name)}: ${esc(W.ents.get(id).form)}</button>`).join("")}</div>`).join("")||'<p class="mu">No words recorded yet.</p>')
+ c.innerHTML=`<h3>${esc(w.name)}</h3>`+(W.cls.map(k=>`<div class="cg" style="border-left-color:${k.color}"><h4>${esc(k.root.form||k.root.lang||"?")} <small>${esc(k.root.form?k.root.lang:"")} · ${k.ids.length}</small></h4>${k.es.map(e=>`<button class="wl ${e.uid===WSEL?"on":""}" data-u="${e.uid}">${esc(N[e.id].name)}: ${esc(e.form)}</button>`).join("")}</div>`).join("")||'<p class="mu">No words recorded yet.</p>')
   +(nd.length?`<p class="mu">No data: ${nd.map(esc).join(", ")}</p>`:"");
- if(WSEL)renderEty(WSEL)}
-function renderEty(id){const e=W.ents.get(id),r=W.w.clusters[e.key],st=[];
- if(r)st.push({l:r.lang,f:r.form});(e.chain||[]).forEach(([l,f,b])=>st.push({l,f,b:!!b}));st.push({l:N[id].name,f:e.form,b:!!e.bor,last:1});
+ if(WSEL!=null)renderEty(WSEL)}
+function renderEty(u){const e=W.all[u],r=W.w.clusters[e.key],st=[];
+ if(r)st.push({l:r.lang,f:r.form});(e.chain||[]).forEach(([l,f,b])=>st.push({l,f,b:!!b}));st.push({l:N[e.id].name,f:e.form,b:!!e.bor,last:1});
  $("#wet").innerHTML=st.map((s,i)=>`${i?`<div class="eln ${s.b?"dot":""}"></div>`:""}<div class="eb ${s.last?"last":""}"><small>${esc(s.l)}</small><b>${esc(s.f)}</b></div>`).join("")}
-$("#wcl").onclick=e=>{const b=e.target.closest(".wl");if(!b)return;WSEL=b.dataset.id;document.querySelectorAll(".wl").forEach(x=>x.classList.toggle("on",x===b));renderEty(WSEL)};
-window.wordsAt=id=>{panels.forEach(closeP);$("#words").classList.add("open");WSEL=id;curSec=W.sec;renderSecs();renderPage()};
+$("#wcl").onclick=e=>{const b=e.target.closest(".wl");if(!b)return;WSEL=+b.dataset.u;document.querySelectorAll(".wl").forEach(x=>x.classList.toggle("on",x===b));renderEty(WSEL)};
+window.wordsAt=id=>{panels.forEach(closeP);$("#words").classList.add("open");WSEL=W.ents.get(id)[0].uid;curSec=W.sec;renderSecs();renderPage()};
 $("#rs").onclick=()=>{W=null;WSEL=null;$("#rs").hidden=true;$("#wd").classList.remove("on");renderSecs();renderPage();setH(LASTH,HB[LASTH])};
 // ---- cluster: distance between languages from the words they share ----
-const ALLW=SECS.flatMap(s=>s.words),WK=ALLW.map(w=>{const m=new Map();w.entries.forEach(e=>N[e[0]]&&m.set(e[0],e[2]));return m});
+const ALLW=SECS.flatMap(s=>s.words),WK=ALLW.map(w=>{const m=new Map();w.entries.forEach(e=>{if(!N[e[0]])return;if(!m.has(e[0]))m.set(e[0],new Set());m.get(e[0]).add(e[2])});return m}).filter(m=>m.size);
 const LNG=[...new Set(WK.flatMap(m=>[...m.keys()]))].sort(byName);
-const sim=(a,b)=>{let n=0,s=0;WK.forEach(m=>{if(m.has(a)&&m.has(b)){n++;if(m.get(a)===m.get(b))s++}});return{n,s,v:n?s/n:null}};
+const sim=(a,b)=>{let n=0,s=0;WK.forEach(m=>{if(m.has(a)&&m.has(b)){n++;if([...m.get(a)].some(k=>m.get(b).has(k)))s++}});return{n,s,v:n?s/n:null}};
 const fmt=v=>String(Number(v.toFixed(3)));
 let CM="i";
 function renderC(){document.querySelectorAll("#cm button").forEach(b=>b.classList.toggle("on",b.dataset.m===CM));const c=$("#cbody");
@@ -244,6 +266,7 @@ function wheel(){const root=upgma(LNG),leaves=[],walk=n=>n.kids.length?n.kids.fo
  leaves.forEach(l=>{const [x,y]=pt(R+6,l.a),deg=l.a*180/Math.PI-90,fl=l.a>Math.PI;
   out+=`<text transform="translate(${f(x)} ${f(y)}) rotate(${f(fl?deg+180:deg)})" text-anchor="${fl?"end":"start"}" dominant-baseline="middle" ${l.gc==null?"":`style="fill:${PAL(l.gc)}"`}>${esc(N[l.id].name)}<title>${esc(N[l.id].name)}</title></text>`});
  return`<svg width="${2*Z}" height="${2*Z}" viewBox="0 0 ${2*Z} ${2*Z}" role="img" aria-label="Wheel of language distances">${out}</svg>`}
+$("#box").addEventListener("click",e=>{const b=e.target.closest(".mx");if(b)go(b.dataset.id)});
 $("#cl").onclick=()=>{const o=!isOpen("#cpanel");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#cpanel").classList.add("open");renderC()}};
 $("#cm").onclick=e=>{const b=e.target.closest("button");if(b){CM=b.dataset.m;renderC()}};$("#cx").onclick=()=>closeP("#cpanel");
 // ---- theme, language ----
