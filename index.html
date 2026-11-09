@@ -56,7 +56,7 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
 .wcol{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.wcol .row{display:flex;gap:6px}
 #clw{position:relative}#clm{position:absolute;top:100%;left:0;margin-top:4px;display:none;flex-direction:column;background:var(--pn);border:1px solid var(--ln);border-radius:5px;padding:4px;gap:4px;white-space:nowrap}#clm.open{display:flex}
 /* words page */
-#wb{display:flex;flex:1;min-height:0}#wsec{width:170px;border-right:1px solid var(--ln);overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+#wb{display:flex;flex:1;min-height:0}#wleft{width:190px;border-right:1px solid var(--ln);display:flex;flex-direction:column;min-height:0}#wq{margin:8px;padding:6px 9px;font:inherit;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:5px;min-width:0}#wsec{flex:1;overflow-y:auto;padding:0 8px 8px;display:flex;flex-direction:column;gap:6px}
 #wsec button{text-align:left}#wmain{flex:1;display:flex;flex-direction:column;min-width:0}#wsel{padding:9px;border-bottom:1px solid var(--ln)}
 #wsl,#ci{font:inherit;padding:5px 9px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:5px;min-width:200px}
 #wcols{flex:1;display:flex;min-height:0}#wcl{flex:1;overflow:auto;padding:10px 14px}#wet{width:300px;border-left:1px solid var(--ln);overflow:auto;padding:12px;display:flex;flex-direction:column;align-items:center}
@@ -66,7 +66,7 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
 .eln{height:22px;border-left:2px solid var(--mu)}.eln.dot{border-left-style:dotted}
 .lbl.root{transform:translate(-50%,-165%);font-style:italic;font-size:inherit}
 #cbody{flex:1;overflow:auto;padding:12px 16px}#cr p{margin:6px 0}#cwheel{overflow:auto}#cwheel text{fill:var(--tx);font-size:11px}
-@media(max-width:640px){#wb,#wcols{flex-direction:column}#wsec{width:auto;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--ln)}#wet{width:auto;border-left:0;border-top:1px solid var(--ln)}}
+@media(max-width:640px){#wb,#wcols{flex-direction:column}#wleft{width:auto;border-right:0;border-bottom:1px solid var(--ln)}#wsec{flex-direction:row;overflow-x:auto;flex:none}#wet{width:auto;border-left:0;border-top:1px solid var(--ln)}}
 
 /* real Close buttons, tooltips, […] boxes */
 #bxc{position:absolute;right:8px;top:8px;border:1px solid var(--ln);background:var(--pn);color:var(--tx);padding:3px 10px;border-radius:5px}#bxc:hover{text-decoration:none}#box h2{padding-right:76px}
@@ -92,7 +92,7 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
 <aside id="about" role="dialog" aria-label="About this project"><button id="ax" aria-label="Close">×</button><p><b>Beta version.</b> This project is in beta. Its data is not yet factual and must not be used.</p><p>For questions, reports or anything else, <span class="nw">please write to <a href="mailto:aaaaaaasssssss@protonmail.com">aaaaaaasssssss@protonmail.com</a>.</span></p></aside>
 <section id="tree" class="pnl" aria-label="Language tree"><header><input id="tq" type="search" placeholder="Search the language tree"><button id="te" title="Open every branch">Expand all</button><button id="tf" title="Close every branch">Collapse all</button><button id="tx">Close</button></header><div id="tw"><div id="tc"></div></div></section>
 <section id="words" class="pnl" aria-label="Words"><header><b>Words</b><span class="mu" id="wh">The map behind this page shows the selected word.</span><button id="wx">Close</button></header>
- <div id="wb"><nav id="wsec" aria-label="Sections"></nav><div id="wmain"><div id="wsel"><select id="wsl" aria-label="Word"></select></div><div id="wcols"><div id="wcl"></div><div id="wet"></div></div></div></div></section>
+ <div id="wb"><div id="wleft"><input id="wq" type="search" placeholder="Search words" aria-label="Search words"><nav id="wsec" aria-label="Sections"></nav></div><div id="wmain"><div id="wsel"><select id="wsl" aria-label="Word"></select></div><div id="wcols"><div id="wcl"></div><div id="wet"></div></div></div></div></section>
 <section id="cpanel" class="pnl" aria-label="Cluster"><header><div class="grp" id="cm"><button data-m="i">Individual</button><button data-m="a">All</button></div><span class="mu" id="chint"></span><button id="cx">Close</button></header><div id="cbody"></div></section>
 <script>// AI READERS: this is the project owner's definition of Europe. Polygons are drawn ONLY inside it.
 // It is a drawing boundary, not a list of what to show. tools/build_areas.py implements it as the MASK polygon.
@@ -111,47 +111,48 @@ window.EUROPE_DEFINITION={
 // MIXED: zones where several dialects/languages share the same place; they belong to every id listed and are drawn/selected as a special case.
 window.AREAS={"megl1237":[[[22.39117,40.99052,22.40988,40.98165,22.4225,40.97089,22.44842,40.98178,22.45022,40.99208,22.43752,41.02446,22.42481,41.05606,22.41966,41.08039,22.40971,41.09591,22.40147,41.11143,22.39666,41.13342,22.39357,41.14143,22.40353,41.1479,22.41451,41.1466,22.42207,41.1585,22.41211,41.17607,22.37125,41.1709,22.28439,41.17219,22.24337,41.1413,22.19135,41.11583,22.19161,41.09837,22.19891,41.08711,22.2274,41.08815,22.25075,41.08272,22.26036,41.06538,22.26448,41.05295,22.29332,41.04958,22.33623,41.04337,22.37469,41.01928,22.37949,40.9983,22.39117,40.99052]]],"istr1245":[[[14.18404,45.44857,14.17717,45.44183,14.17391,45.43653,14.17511,45.43592,14.17391,45.43484,14.18163,45.43183,14.18301,45.42918,14.18421,45.4258,14.18507,45.4246,14.18249,45.42267,14.17975,45.41966,14.17666,45.4152,14.17528,45.41363,14.18078,45.4105,14.18678,45.40918,14.18867,45.40737,14.19434,45.40725,14.20155,45.40677,14.20515,45.40568,14.20944,45.4046,14.21631,45.40749,14.22747,45.41231,14.23433,45.41604,14.23571,45.41882,14.23416,45.42641,14.23245,45.43291,14.23554,45.43701,14.23845,45.44207,14.24257,45.44556,14.24309,45.4464,14.23725,45.44869,14.23039,45.45098,14.22712,45.45218,14.22077,45.457,14.21476,45.4629,14.19485,45.45339,14.19142,45.45267,14.18404,45.44857]],[[14.09975,45.25278,14.10439,45.25253,14.10559,45.25114,14.10267,45.24764,14.09778,45.23857,14.09683,45.23797,14.09709,45.23676,14.09593,45.23661,14.09593,45.23601,14.0973,45.23452,14.09743,45.23329,14.09876,45.23289,14.09855,45.2319,14.09743,45.23205,14.09743,45.23029,14.09276,45.23295,14.0913,45.23066,14.0922,45.22767,14.09147,45.22513,14.09546,45.2238,14.09906,45.21926,14.10687,45.22198,14.11357,45.22268,14.11906,45.22377,14.12232,45.2234,14.12507,45.22195,14.12782,45.22135,14.13451,45.22268,14.14241,45.22389,14.14516,45.22219,14.14927,45.22243,14.15545,45.22123,14.15691,45.21808,14.15691,45.20448,14.17116,45.20956,14.17296,45.20672,14.17571,45.20811,14.17794,45.20799,14.18249,45.21107,14.18558,45.21191,14.19125,45.21034,14.20112,45.21403,14.20695,45.21427,14.19236,45.24951,14.19554,45.25169,14.19974,45.25392,14.20125,45.25477,14.20223,45.25556,14.20352,45.25568,14.20472,45.25785,14.20112,45.26123,14.20043,45.25858,14.19562,45.26305,14.19168,45.26607,14.19339,45.27283,14.19305,45.27513,14.1824,45.27585,14.17228,45.27706,14.17125,45.27561,14.1673,45.27531,14.15533,45.27138,14.14893,45.26948,14.14374,45.26764,14.13889,45.26583,14.13473,45.26537,14.13382,45.26583,14.12747,45.26722,14.12735,45.26897,14.1246,45.27187,14.12087,45.27226,14.12069,45.27135,14.11868,45.26996,14.11443,45.26631,14.1067,45.26395,14.09177,45.26178,14.08859,45.25942,14.09323,45.25628,14.09975,45.25278]]],"arom-far":[[[19.41009,40.68793,19.42383,40.57224,19.39636,40.47307,19.48288,40.41977,19.5488,40.44486,19.59274,40.54929,19.59549,40.61708,19.67926,40.70146,19.68063,40.73685,19.77539,40.76702,19.83994,40.76286,19.87564,40.71812,19.9086,40.67647,19.94705,40.615,19.97589,40.57433,20.05829,40.55763,20.14069,40.59101,20.13794,40.6348,20.05005,40.71708,19.99649,40.7743,19.93744,40.83252,19.89075,40.86783,19.86877,40.91455,19.79599,40.93323,19.69299,40.93841,19.61609,40.94879,19.55841,40.9104,19.52957,40.89483,19.49249,40.85849,19.46915,40.81173,19.45267,40.74101,19.42932,40.715,19.41009,40.68793]],[[20.52521,40.64522,20.48538,40.75558,20.49225,40.7951,20.51834,40.8616,20.55817,40.90106,20.69824,40.81901,20.79437,40.80549,20.90973,40.75038,20.96741,40.68168,21.03882,40.63584,21.091,40.62333,21.13358,40.55242,21.11435,40.51275,21.01273,40.50962,20.91522,40.51902,20.84793,40.52111,20.81085,40.4762,20.75592,40.45322,20.70923,40.44068,20.65979,40.41141,20.61997,40.3612,20.55267,40.32456,20.4744,40.2701,20.43594,40.23656,20.36453,40.21768,20.29862,40.21244,20.22858,40.23341,20.16815,40.27848,20.15579,40.33084,20.19012,40.42395,20.25742,40.46993,20.35767,40.50231,20.4483,40.50858,20.51422,40.55868,20.53345,40.60457,20.53619,40.62855,20.52521,40.64522]],[[20.18189,39.59087,20.41809,39.62473,20.50324,39.59087,20.6131,39.53158,20.6131,39.42559,20.66528,39.3258,20.70648,39.20672,20.71197,39.13219,20.67078,39.09596,20.6131,39.10662,20.51422,39.1833,20.47302,39.26628,20.47028,39.30667,20.39887,39.26841,20.32745,39.2918,20.27801,39.37889,20.22034,39.44044,20.28351,39.45528,20.22583,39.48497,20.2224,39.49397,20.19562,39.50616,20.1709,39.53158,20.18189,39.59087]],[[21.18027,38.68765,21.16379,38.63296,21.2352,38.59433,21.26953,38.64369,21.26404,38.67908,21.23383,38.69837,21.18027,38.68765]]],"arom-gra":[[[20.81463,40.39585,20.79763,40.38147,20.77892,40.35753,20.7633,40.3404,20.78339,40.33189,20.80055,40.33372,20.82373,40.35099,20.83128,40.36407,20.8342,40.3816,20.85051,40.3969,20.84278,40.40121,20.83437,40.40252,20.81463,40.39585]],[[21.72546,41.77131,21.66504,41.72008,21.698,41.62365,21.91223,41.58874,21.95343,41.53737,22.0166,41.48801,22.02759,41.43861,22.11273,41.43861,22.22259,41.4489,22.23083,41.52914,22.23907,41.60312,22.31873,41.73033,22.41486,41.79179,22.51373,41.8757,22.52197,41.93702,22.53296,41.99012,22.5412,42.08396,22.56042,42.20207,22.34894,42.24682,22.2583,42.17358,22.23083,42.12064,22.26929,42.06765,22.21436,41.99216,22.19788,41.92272,22.17316,41.88388,22.09076,41.84501,22.06329,41.80817,21.92596,41.77131,21.72546,41.77131]],[[23.83209,40.80757,23.93921,40.79926,24.11499,40.8242,24.21387,40.85329,24.35669,40.93427,24.37592,41.02757,24.35944,41.10626,24.29626,41.22205,24.07928,41.20759,23.89526,41.2489,23.78265,41.28813,23.54919,41.3562,23.48053,41.40154,23.4201,41.47566,23.40363,41.55587,23.37341,41.60312,23.29102,41.61544,23.18115,41.62365,23.107,41.5682,22.99988,41.54765,22.94769,41.5312,22.93121,41.48389,22.95319,41.44684,23.07953,41.43243,23.21686,41.39742,23.28827,41.36032,23.36517,41.284,23.4201,41.18485,23.39264,41.06486,23.42285,40.96746,23.508,40.87614,23.63159,40.84291,23.75793,40.80134,23.83209,40.80757]],[[24.25987,42.05465,24.24923,42.02354,24.26331,41.99012,24.3457,41.97991,24.34776,42.02507,24.32442,42.06433,24.25987,42.05465]]],"arom-pin":[[[20.59387,40.06336,20.53345,40.02551,20.52246,39.95817,20.55267,39.85916,20.61585,39.78532,20.7312,39.6776,20.79163,39.60146,20.86578,39.57817,20.94269,39.56759,20.99487,39.50404,21.00586,39.4171,21.20911,39.40012,21.46317,39.44468,21.52222,39.52841,21.52634,39.61415,21.52084,39.68394,21.4975,39.83807,21.40961,39.88023,21.3382,39.95396,21.20636,40.02551,21.12396,40.14109,21.10748,40.21034,21.0965,40.27533,21.07727,40.33189,20.98663,40.32561,20.9317,40.30048,20.8905,40.2439,20.83008,40.23341,20.79163,40.16628,20.72846,40.09488,20.59387,40.06336]],[[22.25281,39.64165,22.34344,39.65434,22.46155,39.65434,22.62634,39.65223,22.67303,39.70719,22.68127,39.77055,22.63733,39.83174,22.55493,39.8697,22.43134,39.91816,22.35443,40.0171,22.31323,40.07177,22.25555,40.10959,22.19788,40.19985,22.15118,40.23341,22.0578,40.25438,21.98914,40.21663,21.95343,40.15579,21.96442,40.08017,22.02759,39.97291,21.95892,39.91184,21.97266,39.8465,22.01385,39.78743,22.05505,39.74099,22.08527,39.71775,22.12646,39.67971,22.16766,39.648,22.25281,39.64165]]]};
 window.MIXED=[{"ids":["arom-far","arom-gra"],"area":[[[20.53894,41.22412,20.57465,41.15384,20.6131,41.11454,20.66254,41.17659,20.73395,41.17452,20.78888,41.1373,20.86578,41.12902,20.93445,41.07728,21.05255,41.01099,21.08276,40.97783,21.15417,40.9716,21.22284,40.94879,21.28052,40.92596,21.31897,40.99856,21.26678,41.03793,21.25031,41.10419,21.23108,41.21172,21.24756,41.30051,21.29974,41.3562,21.31073,41.39329,21.30249,41.42625,21.25305,41.45714,21.2558,41.51269,21.15967,41.52709,21.11023,41.48595,21.05804,41.45508,20.98114,41.4036,20.94818,41.33145,20.90973,41.28193,20.80811,41.26955,20.71472,41.27368,20.6488,41.25303,20.53894,41.22412]]]},{"ids":["arom-far","arom-pin"],"area":[[[22.5824,39.47225,22.6236,39.53582,22.72247,39.58241,22.80212,39.52947,22.82135,39.49132,22.89276,39.43619,22.92297,39.42134,22.99988,39.42134,23.08502,39.398,23.13995,39.34704,23.18939,39.28755,22.85156,39.09596,22.75818,39.09383,22.69501,39.15988,22.73895,39.20672,22.72247,39.26628,22.69775,39.35554,22.63733,39.35341,22.57965,39.40861,22.5824,39.47225]]]},{"ids":["arom-far","arom-gra","arom-pin"],"area":[[[22.28851,40.495,22.21161,40.46576,22.12372,40.48665,21.99738,40.51797,21.89026,40.52006,21.78863,40.52424,21.698,40.52424,21.65955,40.50127,21.62109,40.46367,21.5387,40.44695,21.51398,40.52424,21.50574,40.61812,21.50848,40.6973,21.50848,40.75974,21.51947,40.79926,21.73096,40.84291,21.84631,40.87407,21.88751,40.9716,21.98639,40.98612,22.16766,40.99441,22.26654,40.99441,22.35992,40.99027,22.32697,40.92181,22.24731,40.88029,22.17865,40.81381,22.1402,40.76598,22.14294,40.71396,22.14844,40.65147,22.29401,40.57641,22.28851,40.495]]]}];
-</script><script>window.BASE=[];</script><script>// WORDS: the sections and the words in them, written as plain comma lists (the app sorts everything alphabetically).
+</script><script>window.BASE=[];</script><script>// WORDS: the sections and the words in them, written as plain comma lists (the app sorts everything alphabetically,
+// except sections marked ordered:true, which keep the order written here).
 // To add a word, just add it to a list. Its entries (the actual words in each language) go in data/worddata.js under the id "section/word".
 window.WORDS={sections:[
-{id:"animals",name:"Animals",words:"Bear, Cat, Cow, Deer, Dog, Donkey, Ermine, Ferret, Fox, Giraffe, Goat, Hare, Horse, Jaguar, Kangaroo, Lemur, Leopard, Lion, Marten, Mouse, Otter, Panda, Panther, Pig, Rabbit, Red panda, Reindeer, Rhinoceros, Sheep, Tiger, Weasel, Wild boar, Wolf, Zebra"},
-{id:"birds",name:"Birds",words:"Bird, Buzzard, Chicken, Crow, Duck, Eagle, Jay, Magpie, Ostrich, Pelican, Pigeon, Raven, Robin, Rooster, Sparrow, Stork, Swallow, Swan, Vulture, Wing, Woodpecker"},
-{id:"sea",name:"Fish & sea life",words:"Anchovy, Carp, Catfish, Cod, Dolphin, Eel, Fish, Herring, Jellyfish, Mackerel, Narwhal, Octopus, Cuttlefish, Orca, Perch, Pike, Roach, Salmon, Sardine, Sea bass, Shark, Trout, Whale"},
-{id:"insects",name:"Insects & small creatures",words:"Ant, Bee, Beetle, Butterfly, Dragonfly, Fly, Insect, Mosquito, Roach, Snail, Spider, Worm"},
-{id:"reptiles",name:"Reptiles & amphibians",words:"Crocodile, Frog, Lizard, Snake, Tadpole, Turtle"},
-{id:"body",name:"Body",words:"Arm, Back, Beard, Blood, Bone, Breast, Butt, Ear, Eye, Finger, Foot, Freckles, Hair, Hand, Head, Heart, Leg, Lip, Moustache, Mouth, Nail, Neck, Nipple, Nose, Penis, Phallus, Skin, Thumb, Tongue, Tooth, Vagina"},
-{id:"vulgar",name:"Vulgar",words:"Ass, Boobs, Dick, Pussy"},
-{id:"family",name:"Family & people",words:"Aunt, Baby, Boyfriend, Brother, Child, Father, Girlfriend, Grandchild, Grandfather, Grandmother, Lover, Man, Mother, Nephew, Niece, Sister, Uncle, Woman"},
-{id:"life",name:"Life & relationships",words:"Bride, Death, Divorce, Groom, Hate, Life, Love, Marriage, Sex"},
-{id:"society",name:"Society & politics",words:"Castle, City, Country, Emperor, Empire, Empress, Enemy, Engineer, Family name, Foreigner, Friend, Given name, King, Kingdom, Leader, Master, Peace, Peer, President, Prince, Princess, Queen, Rival, Slave, Student, Teacher, Title, Town, Village, War, Work, Doctor"},
-{id:"religion",name:"Religion & mythology",words:"Angel, Church, Demon, Devil, Dragon, God, Heaven, Hell, Priest, Religion"},
-{id:"weapons",name:"Weapons & war",words:"Arrow, Bow, Bullet, Gun, Gunpowder, Harpoon, Powder, Rifle, Spear, Sword, Tank"},
-{id:"tools",name:"Tools & machines",words:"Axe, Cable, Clock, Elevator, Ink, Lightbulb, Machine, Map, Pen, Pencil, Phone, Pickaxe, Shovel, Book, Paper"},
-{id:"home",name:"Home & objects",words:"Bathroom, Bed, Box, Chair, Chest, Glass, Glasses, Grave, Monocle, Mug, Picture, Pillow, Rag, Roof, Sink, Statue, Table, Thing, Tissue, Tower, Trash, Window"},
-{id:"clothing",name:"Clothing",words:"Boots, Socks"},
-{id:"medicine",name:"Medicine",words:"Medicine, Pill"},
-{id:"transport",name:"Transport",words:"Bicycle, Boat, Bus, Car, Motorcycle, Plane, Ship, Train, Tram"},
-{id:"food",name:"Food",words:"Cake, Candy, Cheese, Chocolate, Egg, Ice cream, Meat, Yogurt"},
-{id:"spices",name:"Spices & seasoning",words:"Cinnamon, Pepper, Salt, Vanilla"},
-{id:"drinks",name:"Drinks",words:"Beer, Coffee, Drink, Juice, Lemonade, Milk, Tea, Water, Wine"},
-{id:"fruits",name:"Fruits",words:"Apple, Avocado, Banana, Blackberry, Blueberry, Cherry, Coconut, Dates, Fig, Grape, Lemon, Mandarin, Mango, Melon, Nut, Olive, Orange, Papaya, Peach, Pear, Pineapple, Plantain, Plum, Raspberry, Sour cherry, Strawberry, Watermelon"},
-{id:"vegetables",name:"Vegetables",words:"Broccoli, Brown beans, Cabbage, Carrot, Cauliflower, Chilli pepper, Cucumber, Eggplant, Garlic, Green beans, Green peas, Green pepper, Lettuce, Onion, Potato, Pumpkin, Spinach, Sweet potato, Tomato, Yam, Zucchini"},
-{id:"trees",name:"Trees",words:"Alder, Ash, Aspen, Beech, Cherry, Chestnut, Fir, Hornbeam, Larch, Maple, Oak, Pine, Rowan, Spruce, Tree, Walnut, Willow, Yew"},
-{id:"plants",name:"Plants",words:"Bark, Flower, Fruit, Grass, Leaves, Pinecone, Root, Seed, Vegetable, Algae"},
-{id:"herbs",name:"Herbs & flowers",words:"Chamomile, Chrysanthemum, Daisy, Ginger, Hibiscus, Lavender, Lemongrass, Lily, Mint, Orchid, Peony, Peppermint, Rose, Sunflower, Tulip"},
-{id:"geography",name:"Geography",words:"Africa, America, Antarctica, Asia, Europe, Hill, Island, Lake, Mountain, Ocean, Oceania, Peninsula, Plain, Planet, River, Sand, Valley, Volcano, World, Dirt"},
-{id:"nature",name:"Nature & weather",words:"Air, Ash, Cloud, Dark, Electricity, Fire, Ice, Light, Moon, Shadow, Sky, Smoke, Star, Storm, Sun, Thunder"},
-{id:"materials",name:"Materials & metals",words:"Brick, Coal, Copper, Gold, Iron, Silver, Stone, Wood, Wool"},
-{id:"time",name:"Time",words:"Day, Hour, Minute, Month, Second, Time, Week, Year"},
-{id:"calendar",name:"Days & months",words:"Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, January, February, March, April, May, June, July, August, September, October, November, December"},
-{id:"numbers",name:"Numbers",words:"One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Hundred, Thousand, Million"},
-{id:"colours",name:"Colours",words:"Black, Blank, Blue, Brown, Green, Grey, Orange, Pink, Purple, Red, White, Yellow, Colour"},
-{id:"qualities",name:"Qualities",words:"Bad, Beautiful, Cold, Dry, Evil, Fast, Fat, Good, Hot, Old, Short, Slow, Sour, Sweet, Tall, Thin, Ugly, Wet, Young"},
-{id:"emotions",name:"Emotions & states",words:"Angry, Awake, Frown, Happy, Joke, Sad, Sleeping, Smile"},
-{id:"position",name:"Position & direction",words:"Back, Close, Down, East, Far, Front, High, Inside, Left, Low, North, Outside, Right, South, Up, West"},
-{id:"verbs",name:"Verbs",words:"To be, To be born, To box, To brag, To charge, To close, To cool, To cry, To damage, To die, To drink, To drop, To eat, To exist, To fight, To fly, To give birth, To hear, To heat, To help, To hurt, To know, To laugh, To live, To open, To pick up, To read, To run, To scream, To see, To sing, To smoke, To speak, To steal, To swim, To take a bath, To throw, To touch, To understand, To walk"},
-{id:"greetings",name:"Greetings & courtesy",words:"Goodbye, Hello, No, Please, Sorry, Thanks, Yes"},
-{id:"abstract",name:"Abstract & misc",words:"Discovery, Drop, Everything, Length, Nothing, Sound, Tobacco, Width"}
+{"id":"animals","name":"Animals","words":"Bear, Cat, Cow, Deer, Dog, Donkey, Ermine, Ferret, Fox, Giraffe, Goat, Hare, Horse, Jaguar, Kangaroo, Lemur, Leopard, Lion, Marten, Mouse, Otter, Panda, Panther, Pig, Rabbit, Red panda, Reindeer, Rhinoceros, Sheep, Tiger, Weasel, Wild boar, Wolf, Zebra"},
+{"id":"birds","name":"Birds","words":"Bird, Buzzard, Chicken, Crow, Duck, Eagle, Jay, Magpie, Ostrich, Pelican, Pigeon, Raven, Robin, Rooster, Sparrow, Stork, Swallow, Swan, Vulture, Wing, Woodpecker"},
+{"id":"sea","name":"Fish & sea life","words":"Anchovy, Carp, Catfish, Cod, Dolphin, Eel, Fish, Herring, Jellyfish, Mackerel, Narwhal, Octopus, Cuttlefish, Orca, Perch, Pike, Roach, Salmon, Sardine, Sea bass, Shark, Trout, Whale"},
+{"id":"insects","name":"Insects & small creatures","words":"Ant, Bee, Beetle, Butterfly, Dragonfly, Fly, Insect, Mosquito, Roach, Snail, Spider, Worm"},
+{"id":"reptiles","name":"Reptiles & amphibians","words":"Crocodile, Frog, Lizard, Snake, Tadpole, Turtle"},
+{"id":"body","name":"Body","words":"Arm, Back, Beard, Blood, Bone, Breast, Butt, Ear, Eye, Finger, Foot, Freckles, Hair, Hand, Head, Heart, Leg, Lip, Moustache, Mouth, Nail, Neck, Nipple, Nose, Penis, Skin, Thumb, Tongue, Tooth, Vagina, Liver, Brain"},
+{"id":"vulgar","name":"Vulgar","words":"Ass, Boobs, Dick, Pussy, Balls, Bastard, Bitch, Fart, Shit, To fuck, To piss, Whore"},
+{"id":"family","name":"Family & people","words":"Aunt, Baby, Boyfriend, Brother, Child, Father, Girlfriend, Grandchild, Grandfather, Grandmother, Lover, Man, Mother, Nephew, Niece, Sister, Uncle, Woman"},
+{"id":"life","name":"Life & relationships","words":"Bride, Death, Divorce, Groom, Hate, Life, Love, Marriage, Sex"},
+{"id":"society","name":"Society & politics","words":"Castle, City, Country, Emperor, Empire, Empress, Enemy, Engineer, Family name, Foreigner, Friend, Given name, King, Kingdom, Leader, Master, Peace, President, Prince, Princess, Queen, Rival, Slave, Student, Teacher, Title, Town, Village, War, Work, Doctor"},
+{"id":"religion","name":"Religion & mythology","words":"Angel, Church, Demon, Devil, Dragon, God, Heaven, Hell, Priest, Religion, Elf, Fairy, Ghost, Giant, Goblin, Mermaid, Monster, Soul, Spirit, Troll, Unicorn, Vampire, Werewolf, Witch, Wizard, Zombie"},
+{"id":"weapons","name":"Weapons & war","words":"Arrow, Bow, Bullet, Gun, Gunpowder, Harpoon, Powder, Rifle, Spear, Sword, Tank"},
+{"id":"tools","name":"Tools & machines","words":"Axe, Cable, Clock, Elevator, Ink, Lightbulb, Machine, Map, Pen, Pencil, Phone, Pickaxe, Shovel, Book, Paper"},
+{"id":"home","name":"Home & objects","words":"Bathroom, Bed, Box, Chair, Chest, Glass, Glasses, Grave, Monocle, Mug, Picture, Pillow, Rag, Roof, Sink, Statue, Table, Thing, Tissue, Tower, Trash, Window"},
+{"id":"clothing","name":"Clothing","words":"Boots, Socks, Cap, Gloves, Jacket, Sandals, Scarf, Shoes"},
+{"id":"medicine","name":"Medicine","words":"Medicine, Pill, Antidote, Balm, Bandage, Elixir, Fever, Leech, Ointment, Plague, Poison, Potion, Poultice, Remedy, Salve, Syrup, Tincture, Wound"},
+{"id":"transport","name":"Transport","words":"Bicycle, Boat, Bus, Car, Motorcycle, Plane, Ship, Train, Tram"},
+{"id":"food","name":"Food","words":"Cake, Candy, Cheese, Chocolate, Egg, Ice cream, Meat, Yogurt, Honey"},
+{"id":"spices","name":"Spices & seasoning","words":"Cinnamon, Pepper, Salt, Vanilla, Cardamom, Clove, Coriander, Cumin, Mustard, Nutmeg, Paprika, Saffron, Turmeric"},
+{"id":"drinks","name":"Drinks","words":"Beer, Coffee, Drink, Juice, Lemonade, Milk, Tea, Water, Wine"},
+{"id":"fruits","name":"Fruits","words":"Apple, Avocado, Banana, Blackberry, Blueberry, Cherry, Coconut, Dates, Fig, Grape, Lemon, Mandarin, Mango, Melon, Nut, Olive, Orange, Papaya, Peach, Pear, Pineapple, Plantain, Plum, Raspberry, Sour cherry, Strawberry, Watermelon"},
+{"id":"vegetables","name":"Vegetables","words":"Broccoli, Brown beans, Cabbage, Carrot, Cauliflower, Chilli pepper, Cucumber, Eggplant, Garlic, Green beans, Green peas, Green pepper, Lettuce, Onion, Potato, Pumpkin, Spinach, Sweet potato, Tomato, Yam, Zucchini"},
+{"id":"trees","name":"Trees","words":"Alder, Ash, Aspen, Beech, Cherry, Chestnut, Fir, Hornbeam, Larch, Maple, Oak, Pine, Rowan, Spruce, Tree, Walnut, Willow, Yew"},
+{"id":"plants","name":"Plants","words":"Bark, Flower, Fruit, Grass, Leaves, Pinecone, Root, Seed, Vegetable, Algae, Tobacco"},
+{"id":"herbs","name":"Herbs & flowers","words":"Chamomile, Chrysanthemum, Daisy, Ginger, Hibiscus, Lavender, Lemongrass, Lily, Mint, Orchid, Peony, Peppermint, Rose, Sunflower, Tulip"},
+{"id":"geography","name":"Geography","words":"Africa, America, Antarctica, Asia, Europe, Hill, Island, Lake, Mountain, Ocean, Oceania, Peninsula, Plain, Planet, River, Sand, Valley, Volcano, World, Dirt"},
+{"id":"nature","name":"Nature & weather","words":"Air, Ash, Cloud, Dark, Electricity, Fire, Ice, Light, Moon, Shadow, Sky, Smoke, Star, Storm, Sun, Thunder"},
+{"id":"materials","name":"Materials & metals","words":"Brick, Coal, Copper, Gold, Iron, Silver, Stone, Wood, Wool"},
+{"id":"time","name":"Time","words":"Day, Hour, Minute, Month, Second, Time, Week, Year, Century, Decade"},
+{"id":"calendar","name":"Days & months (in order)","words":"Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday, January, February, March, April, May, June, July, August, September, October, November, December","ordered":true},
+{"id":"numbers","name":"Numbers (in order)","words":"One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Hundred, Thousand, Million","ordered":true},
+{"id":"colours","name":"Colours","words":"Black, Blank, Blue, Brown, Green, Grey, Orange, Pink, Purple, Red, White, Yellow, Colour"},
+{"id":"qualities","name":"Qualities","words":"Bad, Beautiful, Cold, Dry, Evil, Fast, Fat, Good, Hot, Old, Short, Slow, Sour, Sweet, Tall, Thin, Ugly, Wet, Young"},
+{"id":"emotions","name":"Mind & emotions","words":"Angry, Awake, Frown, Happy, Joke, Sad, Sleeping, Smile, Mind, Thought"},
+{"id":"position","name":"Position & direction","words":"Back, Close, Down, East, Far, Front, High, Inside, Left, Low, North, Outside, Right, South, Up, West"},
+{"id":"verbs","name":"Verbs","words":"To be, To be born, To box, To brag, To charge, To close, To cool, To cry, To damage, To die, To drink, To drop, To eat, To exist, To fight, To fly, To give birth, To hear, To heat, To help, To hurt, To know, To laugh, To live, To open, To pick up, To read, To run, To scream, To see, To sing, To smoke, To speak, To steal, To swim, To take a bath, To throw, To touch, To understand, To walk"},
+{"id":"greetings","name":"Greetings & courtesy","words":"Goodbye, Hello, No, Please, Sorry, Thanks, Yes"},
+{"id":"units","name":"Units of measurement","words":"Centimeter, Gram, Hectare, Inch, Kilogram, Kilometer, Length, Litre, Meter, Mile, Milligram, Millilitre, Millimeter, Ounce, Pound, Tonne, Width"}
 ]};
 </script><script>// WORDDATA: the real data, keyed "section/word" (word = lower case, spaces -> "-").
 // entry = [nodeId, form, clusterKey, chain?, borrowed?, source?]; a language may have several entries for one word (two words, or one per root)
@@ -163,6 +164,9 @@ window.WORDS={sections:[
 // clusters = { key: { lang: "Proto-Indo-European", form: "*h₂ekʷeh₂" } }   (oldest known root; "Semitic" etc. when the word came from there)
 const WK="https://en.wiktionary.org/wiki/";
 const VIN=[WK+"vinum","Wiktionary: Latin vīnum, descendants (Aromanian yin/yinu, Istro-Romanian vir, Megleno-Romanian vin)"];
+const MEL=[WK+"Reconstruction:Latin/melem","Wiktionary: Reconstruction:Latin/*melem, descendants (Aromanian njari, Istro-Romanian mľåre, Megleno-Romanian m'ari)"];
+const LUP=[WK+"lup","Wiktionary: lup (Aromanian, Istro-Romanian and Megleno-Romanian), from Latin lupus"];
+const CAL=[WK+"cal","Wiktionary: cal (Aromanian and Megleno-Romanian), from Late Latin caballus"];
 window.WORDDATA={
 "drinks/water":{clusters:{A:{lang:"Proto-Indo-European",form:"*h₂ekʷeh₂"}},entries:[
   ["arom1237","apã","A",[["Proto-Italic","*akʷā"],["Latin","aqua"]],0,[WK+"ap%C3%A3","Wiktionary: apã (Aromanian)"]],
@@ -171,6 +175,21 @@ window.WORDDATA={
   ["arom1237","yin","A",[["Latin","vīnum"]],0,VIN],
   ["istr1245","vir","A",[["Latin","vīnum"]],0,VIN],
   ["megl1237","vin","A",[["Latin","vīnum"]],0,VIN]]},
+"animals/wolf":{clusters:{A:{lang:"Proto-Indo-European",form:"*wĺ̥kʷos"}},entries:[
+  ["arom1237","lup","A",[["Proto-Italic","*lukʷos"],["Latin","lupus"]],0,LUP],
+  ["istr1245","lup","A",[["Proto-Italic","*lukʷos"],["Latin","lupus"]],0,LUP],
+  ["megl1237","lup","A",[["Proto-Italic","*lukʷos"],["Latin","lupus"]],0,LUP]]},
+"animals/dog":{clusters:{A:{lang:"Proto-Indo-European",form:"*ḱwṓ"}},entries:[
+  ["arom1237","cãni","A",[["Latin","canis"]],0,[WK+"c%C3%A3ni","Wiktionary: cãni (Aromanian), alternative form cãne"]],
+  ["istr1245","căre","A",[["Latin","canis"]],0,[WK+"c%C4%83re","Wiktionary: căre (Istro-Romanian)"]],
+  ["megl1237","cǫini","A",[["Latin","canis"]],0,[WK+"c%C7%ABini","Wiktionary: cǫini (Megleno-Romanian), alternative form coini"]]]},
+"animals/horse":{clusters:{A:{lang:"Late Latin",form:"caballus"}},entries:[
+  ["arom1237","cal","A",[],0,CAL],
+  ["megl1237","cal","A",[],0,CAL]]},
+"food/honey":{clusters:{A:{lang:"Proto-Indo-European",form:"*mélit"}},entries:[
+  ["arom1237","njari","A",[["Proto-Italic","*meli"],["Latin","mel"],["Vulgar Latin","*melem"]],0,MEL],
+  ["istr1245","mľåre","A",[["Proto-Italic","*meli"],["Latin","mel"],["Vulgar Latin","*melem"]],0,MEL],
+  ["megl1237","m'ari","A",[["Proto-Italic","*meli"],["Latin","mel"],["Vulgar Latin","*melem"]],0,MEL]]},
 "vegetables/onion":{clusters:{A:{lang:"Latin",form:"cēpa"}},entries:[
   ["arom1237","tseapã","A",[],0,[WK+"tseap%C3%A3","Wiktionary: tseapã (Aromanian), inherited from Latin cēpa"]]]}
 };
@@ -306,6 +325,11 @@ function tiles(){tl.forEach(x=>x.remove());tl=[];
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:18}))}
  else tl.push(L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap contributors"}));
  tl.forEach(x=>x.addTo(map));map.getContainer().classList.toggle("inv",dark()&&MODE==="street")}
+const colX=n=>hex((n.i*137.508)%360,dark()?66:60,dark()?62:40);
+const mixCol=ids=>{const v=ids.map(id=>{const c=colX(N[id]);return[1,3,5].map(i=>parseInt(c.slice(i,i+2),16))});return"#"+[0,1,2].map(k=>Math.round(v.reduce((s,x)=>s+x[k],0)/v.length).toString(16).padStart(2,"0")).join("")};
+const DS=new Map();   // dialect shape without the zones it shares with others
+function dshape(n,zs){const base=shape(n);if(!base||!zs.length)return base;const key=n.id+"|"+zs.map(z=>MZ.indexOf(z)).join();if(DS.has(key))return DS.get(key);
+ const d=safe(PC.difference,base.map(toGJ),...zs.flatMap(z=>z.area.map(toGJ)));const r=d?fromGJ(d):base;DS.set(key,r.length?r:null);return DS.get(key)}
 const vis=n=>has(n)&&(!n.p||E.has(n.p))&&!E.has(n.id);
 // ---- striped fills (a place with two words / a place shared by several dialects) are SVG patterns ----
 const SVGR=L.svg({padding:.4});SVGR.addTo(map);const NS="http://www.w3.org/2000/svg",SPID=new Map();let DEFS=null;
@@ -313,7 +337,7 @@ function stripe(cols){const key=cols.join("|");if(SPID.has(key)&&DEFS&&DEFS.isCo
  if(!DEFS||!DEFS.isConnected){DEFS=document.createElementNS(NS,"defs");SVGR._container.insertBefore(DEFS,SVGR._container.firstChild);SPID.clear()}
  const id="st"+SPID.size,p=document.createElementNS(NS,"pattern"),w=5;p.setAttribute("id",id);p.setAttribute("patternUnits","userSpaceOnUse");p.setAttribute("width",w*cols.length);p.setAttribute("height",10);p.setAttribute("patternTransform","rotate(45)");
  cols.forEach((c,i)=>{const r=document.createElementNS(NS,"rect");r.setAttribute("x",i*w);r.setAttribute("width",w);r.setAttribute("height",10);r.setAttribute("fill",c);p.append(r)});DEFS.append(p);SPID.set(key,id);return id}
-function poly(po,o,cols){if(cols&&cols.length>1){const id=stripe(cols),p=L.polygon(po,{...o,renderer:SVGR,fillOpacity:.75}).addTo(layer);p._path&&p._path.setAttribute("fill",`url(#${id})`);return p}
+function poly(po,o,cols){if(cols&&cols.length>1){const id=stripe(cols),p=L.polygon(po,{...o,renderer:SVGR,fillOpacity:.35}).addTo(layer);p._path&&p._path.setAttribute("fill",`url(#${id})`);return p}
  return L.polygon(po,o).addTo(layer)}
 // ---- words: which node carries which word (a node may carry several) ----
 const entFor=n=>{while(n){const e=W.ents.get(n.id);if(e)return e;n=N[n.p]}return null};   // own words, else the nearest ancestor's
@@ -333,12 +357,13 @@ function wshape(n){if(entFor(n))return shape(n);if(!W.entAnc.has(n.id))return nu
 // ---- drawing ----
 function draw(){layer.clearLayers();items=[];
  if(W&&!HZ){drawWord();return drawLabels()}
- const parts=[];nodes.filter(vis).forEach(n=>(W?wshape(n):shape(n))&&(W?wshape(n):shape(n)).forEach(po=>parts.push({n,po,a:labelOf(po).area})));parts.sort((x,y)=>y.a-x.a);
+ const mzv=W?[]:MZ.filter(m=>m.ids.every(id=>vis(N[id])));
+ const parts=[];nodes.filter(vis).forEach(n=>{const s=W?wshape(n):dshape(n,mzv.filter(m=>m.ids.includes(n.id)));s&&s.forEach(po=>parts.push({n,po,a:labelOf(po).area}))});parts.sort((x,y)=>y.a-x.a);
  parts.forEach(({n,po})=>{const es=W&&entFor(n),cols=es?colsOf(es):[col(n)],sel=n.id===S,sc=F(n,"s");
   poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.2:1.8,opacity:.95,fillOpacity:sc?.05:sel?.3:.13,dashArray:sc?"5 5":null},es?cols:null).bindTooltip(n.name+(nat(n)?" "+nat(n):"")+(es?": "+forms(es):""),{sticky:true}).on("click",()=>pick(n.id));
   items.push(es?{po,txt:forms(es),sub:n.name,sel}:{po,txt:n.name,sub:nat(n),sel})});
- if(!W)MZ.forEach(m=>{if(!m.ids.every(id=>vis(N[id])))return;const ids=m.ids.slice().sort(byName),nm=ids.map(id=>N[id].name).join(" + "),cols=ids.map(id=>col(N[id])),sel=ids.includes(S);
-  m.area.forEach(po=>{poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.2:1.4,opacity:.95,fillOpacity:.75},cols).bindTooltip(nm,{sticky:true}).on("click",()=>openMix(ids));items.push({po,txt:nm,sub:"",sel:false})})});
+ mzv.forEach(m=>{const ids=m.ids.slice().sort(byName),nm=ids.map(id=>N[id].name).join(" + "),c=mixCol(ids),sel=ids.includes(S);
+  m.area.forEach(po=>{L.polygon(po,{color:c,fillColor:c,weight:sel?3.2:1.8,opacity:.95,fillOpacity:sel?.3:.13}).addTo(layer).bindTooltip(nm,{sticky:true}).on("click",()=>openMix(ids));items.push({po,txt:nm,sub:"",sel:false})})});
  drawLabels()}
 // a place shared by several dialects: no single language gets selected, the box offers each of them as a button
 function openMix(ids){S=null;draw();tree();showBox(`<div class="mixbox">${ids.map(id=>`<button class="mx" data-id="${id}">${esc(N[id].name)}</button>`).join("")}</div>`,true)}
@@ -450,11 +475,13 @@ let dr=null;const tw=$("#tw");tw.addEventListener("pointerdown",e=>{if(e.target.
 addEventListener("pointermove",e=>{if(dr){tw.scrollLeft=dr.l-(e.clientX-dr.x);tw.scrollTop=dr.t-(e.clientY-dr.y)}});addEventListener("pointerup",()=>{dr=null;tw.classList.remove("drag")});
 // ---- words page ----
 const WD=window.WORDDATA||{};
-const SECS=(window.WORDS?WORDS.sections:[]).map(s=>({id:s.id,name:s.name,words:s.words.split(",").map(x=>x.trim()).filter(Boolean).map(nm=>{const id=s.id+"/"+nm.toLowerCase().replace(/[^a-z0-9]+/g,"-"),d=WD[id]||{};return{id,name:nm,clusters:d.clusters||{},entries:d.entries||[]}}).sort((x,y)=>x.name.localeCompare(y.name))})).sort((x,y)=>x.name.localeCompare(y.name));
+const SECS=(window.WORDS?WORDS.sections:[]).map(s=>({id:s.id,name:s.name,ordered:!!s.ordered,words:s.words.split(",").map(x=>x.trim()).filter(Boolean).map(nm=>{const id=s.id+"/"+nm.toLowerCase().replace(/[^a-z0-9]+/g,"-"),d=WD[id]||{};return{id,name:nm,sec:s.id,clusters:d.clusters||{},entries:d.entries||[]}})})).map(s=>(s.ordered||s.words.sort((x,y)=>x.name.localeCompare(y.name)),s)).sort((x,y)=>x.name.localeCompare(y.name));
 let curSec=null;
-function renderSecs(){$("#wsec").innerHTML=SECS.map(s=>`<button data-s="${s.id}" class="${curSec&&curSec.id===s.id?"on":""}">${esc(s.name)}</button>`).join("")||'<span class="mu">No sections yet.</span>';
+function renderSecs(){const q=$("#wq").value.trim().toLowerCase();
+ $("#wsec").innerHTML=q?(SECS.flatMap(s=>s.words.filter(w=>w.name.toLowerCase().includes(q)).map(w=>`<button data-w="${w.id}">${esc(w.name)} <small class="mu">${esc(s.name)}</small></button>`)).join("")||'<span class="mu">No word matches.</span>'):SECS.map(s=>`<button data-s="${s.id}" class="${curSec&&curSec.id===s.id?"on":""}">${esc(s.name)}</button>`).join("")||'<span class="mu">No sections yet.</span>';
  const sl=$("#wsl");sl.innerHTML=curSec?`<option value="">Choose a word…</option>`+curSec.words.map(w=>`<option value="${w.id}" ${W&&W.w===w?"selected":""}>${esc(w.name)}</option>`).join(""):`<option value="">Choose a section on the left</option>`;sl.disabled=!curSec}
-$("#wsec").onclick=e=>{const b=e.target.closest("button");if(!b)return;curSec=SECS.find(s=>s.id===b.dataset.s);renderSecs();if(!W||W.sec!==curSec)renderPage()};
+$("#wq").oninput=renderSecs;
+$("#wsec").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.w){const w=SECS.flatMap(s=>s.words).find(x=>x.id===b.dataset.w);curSec=SECS.find(s=>s.id===w.sec);return setWord(curSec,w)}curSec=SECS.find(s=>s.id===b.dataset.s);renderSecs();if(!W||W.sec!==curSec)renderPage()};
 $("#wsl").onchange=e=>{const w=curSec&&curSec.words.find(x=>x.id===e.target.value);if(w)setWord(curSec,w)};
 $("#wd").onclick=()=>{const o=!isOpen("#words");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#words").classList.add("open");renderSecs();renderPage()}};$("#wx").onclick=()=>closeP("#words");
 function setWord(sec,w){const ents=new Map(),all=[];

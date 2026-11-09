@@ -52,6 +52,11 @@ function tiles(){tl.forEach(x=>x.remove());tl=[];
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:18}))}
  else tl.push(L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap contributors"}));
  tl.forEach(x=>x.addTo(map));map.getContainer().classList.toggle("inv",dark()&&MODE==="street")}
+const colX=n=>hex((n.i*137.508)%360,dark()?66:60,dark()?62:40);
+const mixCol=ids=>{const v=ids.map(id=>{const c=colX(N[id]);return[1,3,5].map(i=>parseInt(c.slice(i,i+2),16))});return"#"+[0,1,2].map(k=>Math.round(v.reduce((s,x)=>s+x[k],0)/v.length).toString(16).padStart(2,"0")).join("")};
+const DS=new Map();   // dialect shape without the zones it shares with others
+function dshape(n,zs){const base=shape(n);if(!base||!zs.length)return base;const key=n.id+"|"+zs.map(z=>MZ.indexOf(z)).join();if(DS.has(key))return DS.get(key);
+ const d=safe(PC.difference,base.map(toGJ),...zs.flatMap(z=>z.area.map(toGJ)));const r=d?fromGJ(d):base;DS.set(key,r.length?r:null);return DS.get(key)}
 const vis=n=>has(n)&&(!n.p||E.has(n.p))&&!E.has(n.id);
 // ---- striped fills (a place with two words / a place shared by several dialects) are SVG patterns ----
 const SVGR=L.svg({padding:.4});SVGR.addTo(map);const NS="http://www.w3.org/2000/svg",SPID=new Map();let DEFS=null;
@@ -59,7 +64,7 @@ function stripe(cols){const key=cols.join("|");if(SPID.has(key)&&DEFS&&DEFS.isCo
  if(!DEFS||!DEFS.isConnected){DEFS=document.createElementNS(NS,"defs");SVGR._container.insertBefore(DEFS,SVGR._container.firstChild);SPID.clear()}
  const id="st"+SPID.size,p=document.createElementNS(NS,"pattern"),w=5;p.setAttribute("id",id);p.setAttribute("patternUnits","userSpaceOnUse");p.setAttribute("width",w*cols.length);p.setAttribute("height",10);p.setAttribute("patternTransform","rotate(45)");
  cols.forEach((c,i)=>{const r=document.createElementNS(NS,"rect");r.setAttribute("x",i*w);r.setAttribute("width",w);r.setAttribute("height",10);r.setAttribute("fill",c);p.append(r)});DEFS.append(p);SPID.set(key,id);return id}
-function poly(po,o,cols){if(cols&&cols.length>1){const id=stripe(cols),p=L.polygon(po,{...o,renderer:SVGR,fillOpacity:.75}).addTo(layer);p._path&&p._path.setAttribute("fill",`url(#${id})`);return p}
+function poly(po,o,cols){if(cols&&cols.length>1){const id=stripe(cols),p=L.polygon(po,{...o,renderer:SVGR,fillOpacity:.35}).addTo(layer);p._path&&p._path.setAttribute("fill",`url(#${id})`);return p}
  return L.polygon(po,o).addTo(layer)}
 // ---- words: which node carries which word (a node may carry several) ----
 const entFor=n=>{while(n){const e=W.ents.get(n.id);if(e)return e;n=N[n.p]}return null};   // own words, else the nearest ancestor's
@@ -79,12 +84,13 @@ function wshape(n){if(entFor(n))return shape(n);if(!W.entAnc.has(n.id))return nu
 // ---- drawing ----
 function draw(){layer.clearLayers();items=[];
  if(W&&!HZ){drawWord();return drawLabels()}
- const parts=[];nodes.filter(vis).forEach(n=>(W?wshape(n):shape(n))&&(W?wshape(n):shape(n)).forEach(po=>parts.push({n,po,a:labelOf(po).area})));parts.sort((x,y)=>y.a-x.a);
+ const mzv=W?[]:MZ.filter(m=>m.ids.every(id=>vis(N[id])));
+ const parts=[];nodes.filter(vis).forEach(n=>{const s=W?wshape(n):dshape(n,mzv.filter(m=>m.ids.includes(n.id)));s&&s.forEach(po=>parts.push({n,po,a:labelOf(po).area}))});parts.sort((x,y)=>y.a-x.a);
  parts.forEach(({n,po})=>{const es=W&&entFor(n),cols=es?colsOf(es):[col(n)],sel=n.id===S,sc=F(n,"s");
   poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.2:1.8,opacity:.95,fillOpacity:sc?.05:sel?.3:.13,dashArray:sc?"5 5":null},es?cols:null).bindTooltip(n.name+(nat(n)?" "+nat(n):"")+(es?": "+forms(es):""),{sticky:true}).on("click",()=>pick(n.id));
   items.push(es?{po,txt:forms(es),sub:n.name,sel}:{po,txt:n.name,sub:nat(n),sel})});
- if(!W)MZ.forEach(m=>{if(!m.ids.every(id=>vis(N[id])))return;const ids=m.ids.slice().sort(byName),nm=ids.map(id=>N[id].name).join(" + "),cols=ids.map(id=>col(N[id])),sel=ids.includes(S);
-  m.area.forEach(po=>{poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.2:1.4,opacity:.95,fillOpacity:.75},cols).bindTooltip(nm,{sticky:true}).on("click",()=>openMix(ids));items.push({po,txt:nm,sub:"",sel:false})})});
+ mzv.forEach(m=>{const ids=m.ids.slice().sort(byName),nm=ids.map(id=>N[id].name).join(" + "),c=mixCol(ids),sel=ids.includes(S);
+  m.area.forEach(po=>{L.polygon(po,{color:c,fillColor:c,weight:sel?3.2:1.8,opacity:.95,fillOpacity:sel?.3:.13}).addTo(layer).bindTooltip(nm,{sticky:true}).on("click",()=>openMix(ids));items.push({po,txt:nm,sub:"",sel:false})})});
  drawLabels()}
 // a place shared by several dialects: no single language gets selected, the box offers each of them as a button
 function openMix(ids){S=null;draw();tree();showBox(`<div class="mixbox">${ids.map(id=>`<button class="mx" data-id="${id}">${esc(N[id].name)}</button>`).join("")}</div>`,true)}
@@ -196,11 +202,13 @@ let dr=null;const tw=$("#tw");tw.addEventListener("pointerdown",e=>{if(e.target.
 addEventListener("pointermove",e=>{if(dr){tw.scrollLeft=dr.l-(e.clientX-dr.x);tw.scrollTop=dr.t-(e.clientY-dr.y)}});addEventListener("pointerup",()=>{dr=null;tw.classList.remove("drag")});
 // ---- words page ----
 const WD=window.WORDDATA||{};
-const SECS=(window.WORDS?WORDS.sections:[]).map(s=>({id:s.id,name:s.name,words:s.words.split(",").map(x=>x.trim()).filter(Boolean).map(nm=>{const id=s.id+"/"+nm.toLowerCase().replace(/[^a-z0-9]+/g,"-"),d=WD[id]||{};return{id,name:nm,clusters:d.clusters||{},entries:d.entries||[]}}).sort((x,y)=>x.name.localeCompare(y.name))})).sort((x,y)=>x.name.localeCompare(y.name));
+const SECS=(window.WORDS?WORDS.sections:[]).map(s=>({id:s.id,name:s.name,ordered:!!s.ordered,words:s.words.split(",").map(x=>x.trim()).filter(Boolean).map(nm=>{const id=s.id+"/"+nm.toLowerCase().replace(/[^a-z0-9]+/g,"-"),d=WD[id]||{};return{id,name:nm,sec:s.id,clusters:d.clusters||{},entries:d.entries||[]}})})).map(s=>(s.ordered||s.words.sort((x,y)=>x.name.localeCompare(y.name)),s)).sort((x,y)=>x.name.localeCompare(y.name));
 let curSec=null;
-function renderSecs(){$("#wsec").innerHTML=SECS.map(s=>`<button data-s="${s.id}" class="${curSec&&curSec.id===s.id?"on":""}">${esc(s.name)}</button>`).join("")||'<span class="mu">No sections yet.</span>';
+function renderSecs(){const q=$("#wq").value.trim().toLowerCase();
+ $("#wsec").innerHTML=q?(SECS.flatMap(s=>s.words.filter(w=>w.name.toLowerCase().includes(q)).map(w=>`<button data-w="${w.id}">${esc(w.name)} <small class="mu">${esc(s.name)}</small></button>`)).join("")||'<span class="mu">No word matches.</span>'):SECS.map(s=>`<button data-s="${s.id}" class="${curSec&&curSec.id===s.id?"on":""}">${esc(s.name)}</button>`).join("")||'<span class="mu">No sections yet.</span>';
  const sl=$("#wsl");sl.innerHTML=curSec?`<option value="">Choose a word…</option>`+curSec.words.map(w=>`<option value="${w.id}" ${W&&W.w===w?"selected":""}>${esc(w.name)}</option>`).join(""):`<option value="">Choose a section on the left</option>`;sl.disabled=!curSec}
-$("#wsec").onclick=e=>{const b=e.target.closest("button");if(!b)return;curSec=SECS.find(s=>s.id===b.dataset.s);renderSecs();if(!W||W.sec!==curSec)renderPage()};
+$("#wq").oninput=renderSecs;
+$("#wsec").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.w){const w=SECS.flatMap(s=>s.words).find(x=>x.id===b.dataset.w);curSec=SECS.find(s=>s.id===w.sec);return setWord(curSec,w)}curSec=SECS.find(s=>s.id===b.dataset.s);renderSecs();if(!W||W.sec!==curSec)renderPage()};
 $("#wsl").onchange=e=>{const w=curSec&&curSec.words.find(x=>x.id===e.target.value);if(w)setWord(curSec,w)};
 $("#wd").onclick=()=>{const o=!isOpen("#words");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#words").classList.add("open");renderSecs();renderPage()}};$("#wx").onclick=()=>closeP("#words");
 function setWord(sec,w){const ents=new Map(),all=[];
