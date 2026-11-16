@@ -14,7 +14,8 @@ const nat=n=>NAT[n.id]?`(${NAT[n.id].main.join("/")})`:"", natAll=n=>NAT[n.id]&&
 const PC=window.polygonClipping, safe=(f,...a)=>{try{return f(...a)}catch(e){return null}};
 const AR={};
 const P=id=>AR[id]||(AR[id]=(AREAS[id]||[]).map(po=>po.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o})));
-const toGJ=po=>po.map(r=>r.map(([la,ln])=>[ln,la])), fromGJ=mp=>mp.map(po=>po.map(r=>r.map(([x,y])=>[y,x])));
+const toGJ=po=>po.map(r=>r.map(([la,ln])=>[ln,la])), ringA=r=>{let s=0;for(let i=0;i<r.length-1;i++)s+=r[i][0]*r[i+1][1]-r[i+1][0]*r[i][1];return Math.abs(s)/2},
+ fromGJ=mp=>mp.map(po=>po.filter((r,i)=>!i||ringA(r)>.02).map(r=>r.map(([x,y])=>[y,x])));   // tiny gaps between hand-drawn neighbours are filled; real enclaves (> 0.02 sq. degrees) stay
 const MZ=(window.MIXED||[]).map(m=>({ids:m.ids,area:m.area.map(po=>po.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o}))}));
 const SH={};
 function shape(n){if(n.id in SH)return SH[n.id];const parts=P(n.id).map(toGJ);MZ.forEach(m=>m.ids.includes(n.id)&&m.area.forEach(po=>parts.push(toGJ(po))));n.kids.forEach(k=>{const s=shape(k);if(s)s.forEach(po=>parts.push(toGJ(po)))});
@@ -157,8 +158,10 @@ function box(){const n=N[S];if(!n||n.name==="[…]")return;const up=N[n.p],bd=[]
  ${n.kids.length?`<p>Descendants: ${n.kids.map(chip).join("")}</p>`:'<p class="mu">No further breakdown recorded.</p>'}`)}
 // ---- horizons ----
 const HB={};
+// a node can only be broken up when all of its ancestors are broken up too (so under a joined language only the language shows)
+function prune(){const keep=new Set(),walk=n=>{if(E.has(n.id)&&(!N[n.p]||keep.has(n.p))){keep.add(n.id);n.kids.forEach(walk)}};nodes.filter(n=>!N[n.p]).forEach(walk);E=keep}
 function setH(m,b){E=new Set();nodes.forEach(n=>{if(!exp(n))return;
- if(m==="B"?!n.p:m==="L"?!F(n,"L")&&!F(n,"D"):m==="D")E.add(n.id)});
+ if(m==="B"?!n.p:m==="L"?!F(n,"L")&&!F(n,"D"):m==="D")E.add(n.id)});prune();
  HZ=m;LASTH=m;S=null;draw();showBox('<p class="mu">Click a shape to open it. Click one of its descendants in this box to break it up; click its ancestor to join it again.</p>');
  document.querySelectorAll("#hz button").forEach(x=>x.classList.toggle("on",x===b));tree()}
 [["Families","F"],["Branches","B"],["Languages","L"],["Dialects","D"]].forEach(([t,m],i)=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>setH(m,b);HB[m]=b;$("#hz").append(b);if(!i)b.classList.add("on")});
@@ -201,12 +204,12 @@ addEventListener("keydown",e=>{if(e.key==="Escape"){panels.forEach(closeP)}});
 let dr=null;const tw=$("#tw");tw.addEventListener("pointerdown",e=>{if(e.target.closest(".tb,.tg2"))return;dr={x:e.clientX,y:e.clientY,l:tw.scrollLeft,t:tw.scrollTop};tw.classList.add("drag")});
 addEventListener("pointermove",e=>{if(dr){tw.scrollLeft=dr.l-(e.clientX-dr.x);tw.scrollTop=dr.t-(e.clientY-dr.y)}});addEventListener("pointerup",()=>{dr=null;tw.classList.remove("drag")});
 // ---- words page ----
-const WD=window.WORDDATA||{};
-const SECS=(window.WORDS?WORDS.sections:[]).map(s=>({id:s.id,name:s.name,ordered:!!s.ordered,words:s.words.split(",").map(x=>x.trim()).filter(Boolean).map(nm=>{const id=s.id+"/"+nm.toLowerCase().replace(/[^a-z0-9]+/g,"-"),d=WD[id]||{};return{id,name:nm,sec:s.id,clusters:d.clusters||{},entries:d.entries||[]}})})).map(s=>(s.ordered||s.words.sort((x,y)=>x.name.localeCompare(y.name)),s)).sort((x,y)=>x.name.localeCompare(y.name));
+const WD=window.WORDDATA||{};const NA=" (N/A)";
+const SECS=(window.WORDS?WORDS.sections:[]).map(s=>({id:s.id,name:s.name,ordered:!!s.ordered,words:s.words.split(",").map(x=>x.trim()).filter(Boolean).map(nm=>{const id=s.id+"/"+nm.toLowerCase().replace(/[^a-z0-9]+/g,"-"),d=WD[id]||{};return{id,name:nm,sec:s.id,na:!((d.entries||[]).some(e=>N[e[0]])),clusters:d.clusters||{},entries:d.entries||[]}})})).map(s=>(s.ordered||s.words.sort((x,y)=>x.name.localeCompare(y.name)),s)).sort((x,y)=>x.name.localeCompare(y.name));
 let curSec=null;
 function renderSecs(){const q=$("#wq").value.trim().toLowerCase();
- $("#wsec").innerHTML=q?(SECS.flatMap(s=>s.words.filter(w=>w.name.toLowerCase().includes(q)).map(w=>`<button data-w="${w.id}">${esc(w.name)} <small class="mu">${esc(s.name)}</small></button>`)).join("")||'<span class="mu">No word matches.</span>'):SECS.map(s=>`<button data-s="${s.id}" class="${curSec&&curSec.id===s.id?"on":""}">${esc(s.name)}</button>`).join("")||'<span class="mu">No sections yet.</span>';
- const sl=$("#wsl");sl.innerHTML=curSec?`<option value="">Choose a word…</option>`+curSec.words.map(w=>`<option value="${w.id}" ${W&&W.w===w?"selected":""}>${esc(w.name)}</option>`).join(""):`<option value="">Choose a section on the left</option>`;sl.disabled=!curSec}
+ $("#wsec").innerHTML=q?(SECS.flatMap(s=>s.words.filter(w=>w.name.toLowerCase().includes(q)).map(w=>`<button data-w="${w.id}">${esc(w.name)}${w.na?NA:""} <small class="mu">${esc(s.name)}</small></button>`)).join("")||'<span class="mu">No word matches.</span>'):SECS.map(s=>`<button data-s="${s.id}" class="${curSec&&curSec.id===s.id?"on":""}">${esc(s.name)}${s.words.every(w=>w.na)?NA:""}</button>`).join("")||'<span class="mu">No sections yet.</span>';
+ const sl=$("#wsl");sl.innerHTML=curSec?`<option value="">Choose a word…</option>`+curSec.words.map(w=>`<option value="${w.id}" ${W&&W.w===w?"selected":""}>${esc(w.name)}${w.na?NA:""}</option>`).join(""):`<option value="">Choose a section on the left</option>`;sl.disabled=!curSec}
 $("#wq").oninput=renderSecs;
 $("#wsec").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.w){const w=SECS.flatMap(s=>s.words).find(x=>x.id===b.dataset.w);curSec=SECS.find(s=>s.id===w.sec);return setWord(curSec,w)}curSec=SECS.find(s=>s.id===b.dataset.s);renderSecs();if(!W||W.sec!==curSec)renderPage()};
 $("#wsl").onchange=e=>{const w=curSec&&curSec.words.find(x=>x.id===e.target.value);if(w)setWord(curSec,w)};
