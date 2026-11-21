@@ -3,10 +3,11 @@ const $=s=>document.querySelector(s), H=document.documentElement, esc=s=>String(
 const ED=window.EDITS||{},INFO=ED.info||{};
 const ROWS=TREE.filter(t=>!(ED.remove||[]).includes(t[0])).map(t=>t.slice()).concat((ED.add||[]).map(t=>t.slice()));
 const RB={};ROWS.forEach(t=>RB[t[0]]=t);
-Object.entries(ED.rename||{}).forEach(([id,v])=>RB[id]&&(RB[id][1]=v));Object.entries(ED.parent||{}).forEach(([id,v])=>RB[id]&&(RB[id][2]=v));Object.entries(ED.flags||{}).forEach(([id,v])=>RB[id]&&(RB[id][3]=v));
+Object.entries(ED.rename||{}).forEach(([id,v])=>RB[id]&&(RB[id][1]=v));Object.entries(ED.parent||{}).forEach(([id,v])=>RB[id]&&(RB[id][2]=v));Object.entries(ED.note||{}).forEach(([id,v])=>RB[id]&&(RB[id][4]=v));Object.entries(ED.flags||{}).forEach(([id,v])=>RB[id]&&(RB[id][3]=v));
 const N={};ROWS.forEach(([id,name,p,f,note,code],i)=>N[id]={id,name,p,f,note,code,i,kids:[]});
 const nodes=Object.values(N);nodes.forEach(n=>N[n.p]&&N[n.p].kids.push(n));
 const F=(n,c)=>n.f.includes(c), anc=n=>{const a=[];while(N[n.p]){n=N[n.p];a.push(n)}return a};
+const disp=n=>F(n,"s")||anc(n).some(a=>F(a,"s"));   // dialects of a dispersed language are dispersed too
 const byName=(a,b)=>N[a].name.localeCompare(N[b].name);
 // ---- geometry: only the small shapes are given; every bigger shape is the UNION (set theory) of its parts ----
 const NAT={};Object.entries(window.NATIVE||{}).forEach(([k,v])=>NAT[k]={main:[v]});Object.assign(NAT,ED.native||{});
@@ -70,14 +71,16 @@ function poly(po,o,cols){if(cols&&cols.length>1){const id=stripe(cols),p=L.polyg
 // ---- words: which node carries which word (a node may carry several) ----
 const entFor=n=>{while(n){const e=W.ents.get(n.id);if(e)return e;n=N[n.p]}return null};   // own words, else the nearest ancestor's
 const forms=es=>[...new Set(es.map(e=>e.form))].join(", "), colsOf=es=>[...new Set(es.map(e=>e.color))];
-function computeWS(){W.ws=new Map();W.sc=new Map();const below={};W.entAnc=new Set();
+function computeWS(){W.ws=new Map();W.sc=new Map();const below={};W.entAnc=new Set();W.mz=MZ.filter(m=>m.ids.every(id=>W.ents.has(id)));
  W.ents.forEach((e,id)=>{below[id]=[];anc(N[id]).forEach(a=>W.entAnc.add(a.id))});
  W.ents.forEach((e,id)=>anc(N[id]).forEach(a=>W.ents.has(a.id)&&below[a.id].push(id)));
  W.ents.forEach((e,id)=>{const base=shape(N[id]);if(!base)return;let r=base;
   const cut=below[id].map(d=>shape(N[d])).filter(Boolean);
   if(cut.length){const d=safe(PC.difference,base.map(toGJ),...cut.map(s=>s.map(toGJ)));r=d?fromGJ(d):base}
+  const zs=W.mz.filter(m=>m.ids.includes(id));   // shared zones are drawn once, on their own
+  if(zs.length){const d=safe(PC.difference,r.map(toGJ),...zs.flatMap(z=>z.area.map(toGJ)));r=d?fromGJ(d):r}
   if(r.length)W.ws.set(id,r)});
- W.cls.forEach(c=>{const ps=c.ids.map(id=>W.ws.get(id)).filter(Boolean).map(s=>s.map(toGJ));
+ W.cls.forEach(c=>{const ps=c.ids.map(id=>W.ws.get(id)).filter(Boolean).map(s=>s.map(toGJ));W.mz.forEach(m=>{if(m.ids.some(id=>c.ids.includes(id)))m.area.forEach(po=>ps.push(toGJ(po)))});
   c.u=ps.length?(()=>{const u=safe(PC.union,...ps);return fromGJ(u||ps.flat())})():null})}
 // with a word selected only places that have a version of that word can be shown; a place that only has descendants with the word is cut down to those descendants
 function wshape(n){if(entFor(n))return shape(n);if(!W.entAnc.has(n.id))return null;if(W.sc.has(n.id))return W.sc.get(n.id);
@@ -85,13 +88,14 @@ function wshape(n){if(entFor(n))return shape(n);if(!W.entAnc.has(n.id))return nu
 // ---- drawing ----
 function draw(){layer.clearLayers();items=[];
  if(W&&!HZ){drawWord();return drawLabels()}
- const mzv=W?[]:MZ.filter(m=>m.ids.every(id=>vis(N[id])));
- const parts=[];nodes.filter(vis).forEach(n=>{const s=W?wshape(n):dshape(n,mzv.filter(m=>m.ids.includes(n.id)));s&&s.forEach(po=>parts.push({n,po,a:labelOf(po).area}))});parts.sort((x,y)=>y.a-x.a);
- parts.forEach(({n,po})=>{const es=W&&entFor(n),cols=es?colsOf(es):[col(n)],sel=n.id===S,sc=F(n,"s");
+ const mzv=MZ.filter(m=>m.ids.every(id=>vis(N[id])&&(!W||entFor(N[id]))));   // zones shared by dialects that are all on screen
+ const parts=[];nodes.filter(vis).forEach(n=>{const zs=mzv.filter(m=>m.ids.includes(n.id)),s=W&&!entFor(n)?wshape(n):dshape(n,zs);s&&s.forEach(po=>parts.push({n,po,a:labelOf(po).area}))});parts.sort((x,y)=>y.a-x.a);
+ parts.forEach(({n,po})=>{const es=W&&entFor(n),cols=es?colsOf(es):[col(n)],sel=n.id===S,sc=disp(n);
   poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.2:1.8,opacity:.95,fillOpacity:sc?.05:sel?.3:.13,dashArray:sc?"5 5":null},es?cols:null).bindTooltip(n.name+(nat(n)?" "+nat(n):"")+(es?": "+forms(es):""),{sticky:true}).on("click",()=>pick(n.id));
   items.push(es?{po,txt:forms(es),sub:n.name,sel}:{po,txt:n.name,sub:nat(n),sel})});
- mzv.forEach(m=>{const ids=m.ids.slice().sort(byName),nm=ids.map(id=>N[id].name).join(" + "),c=mixCol(ids),sel=ids.includes(S);
-  m.area.forEach(po=>{L.polygon(po,{color:c,fillColor:c,weight:sel?3.2:1.8,opacity:.95,fillOpacity:sel?.3:.13}).addTo(layer).bindTooltip(nm,{sticky:true}).on("click",()=>openMix(ids));items.push({po,txt:nm,sub:"",sel:false})})});
+ mzv.forEach(m=>{const ids=m.ids.slice().sort(byName),nm=ids.map(id=>N[id].name).join(" + "),sel=ids.includes(S),es=W?ids.flatMap(id=>entFor(N[id])):null,
+   cols=es?colsOf(es):[mixCol(ids)],c=cols[0],tip=es?`${nm}: ${forms(es)}`:nm;
+  m.area.forEach(po=>{poly(po,{color:c,fillColor:c,weight:sel?3.2:1.8,opacity:.95,fillOpacity:es?(sel?.6:.4):(sel?.3:.13)},es?cols:null).bindTooltip(tip,{sticky:true}).on("click",()=>openMix(ids));items.push({po,txt:es?forms(es):nm,sub:es?nm:"",sel:false})})});
  drawLabels()}
 // a place shared by several dialects: no single language gets selected, the box offers each of them as a button
 function openMix(ids){S=null;draw();tree();showBox(`<div class="mixbox">${ids.map(id=>`<button class="mx" data-id="${id}">${esc(N[id].name)}</button>`).join("")}</div>`,true)}
@@ -101,6 +105,8 @@ function drawWord(){const parts=[];
  parts.forEach(({id,po})=>{const n=N[id],es=W.ents.get(id),sel=id===S,cols=colsOf(es);
   poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.6:1.6,opacity:.95,fillOpacity:sel?.6:.4},cols).bindTooltip(`${n.name}: ${forms(es)}`,{sticky:true}).on("click",()=>pick(id));
   items.push({po,txt:forms(es),sub:n.name,sel})});
+ W.mz.forEach(m=>{const ids=m.ids.slice().sort(byName),es=ids.flatMap(id=>W.ents.get(id)),cols=colsOf(es),sel=ids.includes(S),nm=ids.map(id=>N[id].name).join(" + ");
+  m.area.forEach(po=>{poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.6:1.6,opacity:.95,fillOpacity:sel?.6:.4},cols).bindTooltip(`${nm}: ${forms(es)}`,{sticky:true}).on("click",()=>openMix(ids));items.push({po,txt:forms(es),sub:nm,sel:false})})});
  W.cls.forEach(c=>{if(!c.u)return;c.u.forEach(po=>L.polygon(po,{color:c.color,weight:4.5,fill:false,opacity:1,interactive:false}).addTo(layer));
   const big=c.u.slice().sort((x,y)=>labelOf(y).area-labelOf(x).area)[0],r=c.root;
   items.push({po:big,txt:r.form||r.lang||"?",sub:r.form?r.lang:"",cls:"root",sel:false,color:c.color})})}
@@ -146,9 +152,9 @@ function box(){const n=N[S];if(!n||n.name==="[…]")return;const up=N[n.p],bd=[]
   +(code?ref("https://iso639-3.sil.org/code/"+code,`ISO 639-3: ${code}`+(RETIRED[code]?` (${RETIRED[code]})`:/^q[a-t][a-z]$/.test(code)?" (private-use code, not an official language code)":"")):"")
   +(inf.links||[]).map(l=>ref(l.url,l.tip||(l.url?defTip(l.url):""))).join("");
  const lnk=i=>K[(gc?1:0)+(code?1:0)+i];
- if(F(n,"x"))bd.push("extinct");if(F(n,"d"))bd.push("disputed");if(F(n,"s"))bd.push("dispersed");if(F(n,"n"))bd.push("outside Europe");
+ if(F(n,"x"))bd.push("extinct");if(F(n,"d"))bd.push("disputed");if(disp(n))bd.push("dispersed");if(F(n,"n"))bd.push("outside Europe");
  (inf.badges||[]).forEach(b=>bd.push(b));
- const e=W&&W.ents.get(n.id),facts=(inf.facts||[]).map(f=>{const r=f.ref!=null&&lnk(f.ref);return`<p>${esc(f.t)}${r?refA(r.l,r.u,r.t):""}</p>`}).join("");
+ const e=W&&W.ents.get(n.id),facts=(inf.facts||[]).map(f=>{const rs=[].concat(f.ref==null?[]:f.ref).map(lnk).filter(Boolean);return`<p>${esc(f.t)}${rs.map(r=>refA(r.l,r.u,r.t)).join("")}</p>`}).join("");
  const wl=e?`<p>${esc(W.w.name)}: <b>${esc(forms(e))}</b>${[...new Map(e.filter(x=>x.src).map(x=>[x.src[0],x.src])).values()].map(s=>{const k=K.find(q=>q.u===s[0]);return k?refA(k.l,k.u,k.t):ref(s[0],s[1])}).join("")} <button onclick="wordsAt('${n.id}')">Etymology</button></p>`:"";
  showBox(`<h2>${esc(n.name)}${refs}</h2>${nat(n)?`<div class="nat mu" ${natAll(n)?`data-tip="${esc(natAll(n))}" tabindex="0"`:""}>${esc(nat(n))}</div>`:""}
  <p>${bd.map(b=>`<span class="badge">${esc(b)}</span>`).join("")}</p>${facts}
