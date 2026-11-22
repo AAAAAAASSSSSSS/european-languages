@@ -20,7 +20,7 @@ add:[
 rename:{tran1277:"Transylvanian",bana1280:"Banat",olte1239:"Oltenia",less1244:"Oltenia-Tarani"},
 parent:{bana1311:"rom-n",baya1255:"rom-n",cris1238:"rom-n",mara1372:"rom-n",mold1248:"rom-n",tran1277:"rom-n",munt1238:"rom-s",less1244:"rom-s"},
 note:{afro1255_etc:"4 further Glottolog branches or languages outside this project, e.g. Berber, Chadic, Cushitic, Egyptian",cent2236_etc:"2 further Glottolog branches or languages outside this project, e.g. Northwest Semitic (Aramaic, Hebrew, Phoenician-Punic), Sayhadic"},
-flags:{aval1237:"Dx",ronc1236:"Dx",alto1237:"Dx",baya1255:"Ds",megl1237:"L",istr1245:"L",arom1237:"Ls"},
+flags:{basq1249:"Dh","rom-n":"ph","rom-s":"ph",aval1237:"Dx",ronc1236:"Dx",alto1237:"Dx",baya1255:"Ds",megl1237:"L",istr1245:"L",arom1237:"Ls"},
 native:{
  roma1327:{main:["Română","Românește"]},
  megl1237:{main:["Vlășește"]},

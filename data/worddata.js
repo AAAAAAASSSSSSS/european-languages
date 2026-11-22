@@ -44,7 +44,7 @@ window.WORDDATA={
   ["istr1245","căre","A",[["Latin","canis"]],0,S("c%C4%83re","căre (Istro-Romanian)")],
   ["megl1237","cǫini","A",[["Latin","canis"]],0,S("c%C7%ABini","cǫini (Megleno-Romanian), alternative form coini")],
   ["roma1327","câine","A",[["Latin","canis"]],0,S("c%C3%A2ine","câine (Romanian), from Latin canis")],
-  ["basq1248","txakur","C",[["Basque","zakur"]],0,S("txakur","txakur (Basque), originally a diminutive of zakur; variants xakur, txakhür")],
+  ["basq1248","txakur","C",[["Basque (base word)","zakur"]],0,S("txakur","txakur (Basque), originally a diminutive of zakur; variants xakur, txakhür")],
   ["basq1248","or","D",[],0,S("or","or (Basque, variant hor); mostly replaced by zakur and txakur")],
   ["cypr1248","kilp","B",[["Arabic","كَلْب (kalb)"]],0,S("Appendix%3ACypriot_Arabic_Swadesh_list","Cypriot Arabic Swadesh list: kilp")],
   ["malt1254","kelb","B",[["Arabic","كَلْب (kalb)"]],0,S("kelb","kelb (Maltese), from Arabic كَلْب (kalb)")]]},

@@ -78,6 +78,8 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
 #box>p:first-child{padding-right:76px}#tip{overflow-wrap:anywhere}
 
 .mixbox{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding-right:76px}.mixbox .mx{min-width:140px;text-align:left}#box .note{font-size:12px;margin:8px 0 0}
+
+.leaflet-container .leaflet-interactive:focus,.leaflet-container svg path:focus,.leaflet-container svg:focus{outline:none!important}.leaflet-container{-webkit-tap-highlight-color:transparent}
 </style>
 </head>
 <body>
@@ -200,7 +202,7 @@ window.WORDDATA={
   ["istr1245","căre","A",[["Latin","canis"]],0,S("c%C4%83re","căre (Istro-Romanian)")],
   ["megl1237","cǫini","A",[["Latin","canis"]],0,S("c%C7%ABini","cǫini (Megleno-Romanian), alternative form coini")],
   ["roma1327","câine","A",[["Latin","canis"]],0,S("c%C3%A2ine","câine (Romanian), from Latin canis")],
-  ["basq1248","txakur","C",[["Basque","zakur"]],0,S("txakur","txakur (Basque), originally a diminutive of zakur; variants xakur, txakhür")],
+  ["basq1248","txakur","C",[["Basque (base word)","zakur"]],0,S("txakur","txakur (Basque), originally a diminutive of zakur; variants xakur, txakhür")],
   ["basq1248","or","D",[],0,S("or","or (Basque, variant hor); mostly replaced by zakur and txakur")],
   ["cypr1248","kilp","B",[["Arabic","كَلْب (kalb)"]],0,S("Appendix%3ACypriot_Arabic_Swadesh_list","Cypriot Arabic Swadesh list: kilp")],
   ["malt1254","kelb","B",[["Arabic","كَلْب (kalb)"]],0,S("kelb","kelb (Maltese), from Arabic كَلْب (kalb)")]]},
@@ -244,7 +246,7 @@ add:[
 rename:{tran1277:"Transylvanian",bana1280:"Banat",olte1239:"Oltenia",less1244:"Oltenia-Tarani"},
 parent:{bana1311:"rom-n",baya1255:"rom-n",cris1238:"rom-n",mara1372:"rom-n",mold1248:"rom-n",tran1277:"rom-n",munt1238:"rom-s",less1244:"rom-s"},
 note:{afro1255_etc:"4 further Glottolog branches or languages outside this project, e.g. Berber, Chadic, Cushitic, Egyptian",cent2236_etc:"2 further Glottolog branches or languages outside this project, e.g. Northwest Semitic (Aramaic, Hebrew, Phoenician-Punic), Sayhadic"},
-flags:{aval1237:"Dx",ronc1236:"Dx",alto1237:"Dx",baya1255:"Ds",megl1237:"L",istr1245:"L",arom1237:"Ls"},
+flags:{basq1249:"Dh","rom-n":"ph","rom-s":"ph",aval1237:"Dx",ronc1236:"Dx",alto1237:"Dx",baya1255:"Ds",megl1237:"L",istr1245:"L",arom1237:"Ls"},
 native:{
  roma1327:{main:["Română","Românește"]},
  megl1237:{main:["Vlășește"]},
@@ -377,7 +379,7 @@ const mixCol=ids=>{const v=ids.map(id=>{const c=colX(N[id]);return[1,3,5].map(i=
 const DS=new Map();   // dialect shape without the zones it shares with others
 function dshape(n,zs){const base=shape(n);if(!base||!zs.length)return base;const key=n.id+"|"+zs.map(z=>MZ.indexOf(z)).join();if(DS.has(key))return DS.get(key);
  const d=safe(PC.difference,base.map(toGJ),...zs.flatMap(z=>z.area.map(toGJ)));const r=d?fromGJ(d):base;DS.set(key,r.length?r:null);return DS.get(key)}
-const vis=n=>has(n)&&(!n.p||E.has(n.p))&&!E.has(n.id);
+const vis=n=>has(n)&&!F(n,"h")&&(!n.p||E.has(n.p))&&!E.has(n.id);
 // ---- striped fills (a place with two words / a place shared by several dialects) are SVG patterns ----
 const SVGR=L.svg({padding:.4});SVGR.addTo(map);const NS="http://www.w3.org/2000/svg",SPID=new Map();let DEFS=null;
 function stripe(cols){const key=cols.join("|");if(SPID.has(key)&&DEFS&&DEFS.isConnected)return SPID.get(key);
@@ -389,45 +391,57 @@ function poly(po,o,cols){if(cols&&cols.length>1){const id=stripe(cols),p=L.polyg
 // ---- words: which node carries which word (a node may carry several) ----
 const entFor=n=>{while(n){const e=W.ents.get(n.id);if(e)return e;n=N[n.p]}return null};   // own words, else the nearest ancestor's
 const forms=es=>[...new Set(es.map(e=>e.form))].join(", "), colsOf=es=>[...new Set(es.map(e=>e.color))];
-function computeWS(){W.ws=new Map();W.sc=new Map();const below={};W.entAnc=new Set();W.mz=MZ.filter(m=>m.ids.every(id=>W.ents.has(id)));
- W.ents.forEach((e,id)=>{below[id]=[];anc(N[id]).forEach(a=>W.entAnc.add(a.id))});
- W.ents.forEach((e,id)=>anc(N[id]).forEach(a=>W.ents.has(a.id)&&below[a.id].push(id)));
- W.ents.forEach((e,id)=>{const base=shape(N[id]);if(!base)return;let r=base;
-  const cut=below[id].map(d=>shape(N[d])).filter(Boolean);
-  if(cut.length){const d=safe(PC.difference,base.map(toGJ),...cut.map(s=>s.map(toGJ)));r=d?fromGJ(d):base}
-  const zs=W.mz.filter(m=>m.ids.includes(id));   // shared zones are drawn once, on their own
-  if(zs.length){const d=safe(PC.difference,r.map(toGJ),...zs.flatMap(z=>z.area.map(toGJ)));r=d?fromGJ(d):r}
-  if(r.length)W.ws.set(id,r)});
- W.cls.forEach(c=>{const ps=c.ids.map(id=>W.ws.get(id)).filter(Boolean).map(s=>s.map(toGJ));W.mz.forEach(m=>{if(m.ids.some(id=>c.ids.includes(id)))m.area.forEach(po=>ps.push(toGJ(po)))});
-  c.u=ps.length?(()=>{const u=safe(PC.union,...ps);return fromGJ(u||ps.flat())})():null})}
+// area of a node minus the places further down that have a word of their own
+function tshape(n){if(W.tc.has(n.id))return W.tc.get(n.id);const base=shape(n);let r=base;
+ if(base){const cut=[];W.ents.forEach((e,id)=>{if(id!==n.id&&anc(N[id]).includes(n)){const s=shape(N[id]);s&&cut.push(s.map(toGJ))}});
+  if(cut.length){const d=safe(PC.difference,base.map(toGJ),...cut);r=d?fromGJ(d):base}if(r&&!r.length)r=null}
+ W.tc.set(n.id,r);return r}
+function computeWS(){W.ws=new Map();W.sc=new Map();W.tc=new Map();W.entAnc=new Set();
+ W.ents.forEach((e,id)=>anc(N[id]).forEach(a=>W.entAnc.add(a.id)));
+ W.ents.forEach((e,id)=>{const r=tshape(N[id]);if(r)W.ws.set(id,r)});
+ W.cls.forEach(c=>{const ps=c.ids.map(id=>W.ws.get(id)).filter(Boolean).map(s=>s.map(toGJ));
+  const un=l=>{const q=l.length?safe(PC.union,...l):null;return l.length?fromGJ(q||l.flat()):null};
+  c.u=un(ps);   // whole cluster (for its label); dispersed and compact members get their own outline (dotted / solid)
+  c.uD=un(c.ids.filter(id=>disp(N[id])).map(id=>W.ws.get(id)).filter(Boolean).map(s=>s.map(toGJ)));
+  c.uN=un(c.ids.filter(id=>!disp(N[id])).map(id=>W.ws.get(id)).filter(Boolean).map(s=>s.map(toGJ)))})}
 // with a word selected only places that have a version of that word can be shown; a place that only has descendants with the word is cut down to those descendants
-function wshape(n){if(entFor(n))return shape(n);if(!W.entAnc.has(n.id))return null;if(W.sc.has(n.id))return W.sc.get(n.id);
+function wshape(n){if(entFor(n))return tshape(n);if(!W.entAnc.has(n.id))return null;if(W.sc.has(n.id))return W.sc.get(n.id);
  const ps=[];W.ws.forEach((mp,id)=>{if(anc(N[id]).includes(n))ps.push(mp.map(toGJ))});const u=ps.length?safe(PC.union,...ps):null;const r=u?fromGJ(u):null;W.sc.set(n.id,r);return r}
-// ---- drawing ----
-function draw(){layer.clearLayers();items=[];
- if(W&&!HZ){drawWord();return drawLabels()}
- const mzv=MZ.filter(m=>m.ids.every(id=>vis(N[id])&&(!W||entFor(N[id]))));   // zones shared by dialects that are all on screen
- const parts=[];nodes.filter(vis).forEach(n=>{const zs=mzv.filter(m=>m.ids.includes(n.id)),s=W&&!entFor(n)?wshape(n):dshape(n,zs);s&&s.forEach(po=>parts.push({n,po,a:labelOf(po).area}))});parts.sort((x,y)=>y.a-x.a);
- parts.forEach(({n,po})=>{const es=W&&entFor(n),cols=es?colsOf(es):[col(n)],sel=n.id===S,sc=disp(n);
-  poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.2:1.8,opacity:.95,fillOpacity:sc?.05:sel?.3:.13,dashArray:sc?"5 5":null},es?cols:null).bindTooltip(n.name+(nat(n)?" "+nat(n):"")+(es?": "+forms(es):""),{sticky:true}).on("click",()=>pick(n.id));
-  items.push(es?{po,txt:forms(es),sub:n.name,sel}:{po,txt:n.name,sub:nat(n),sel})});
- mzv.forEach(m=>{const ids=m.ids.slice().sort(byName),nm=ids.map(id=>N[id].name).join(" + "),sel=ids.includes(S),es=W?ids.flatMap(id=>entFor(N[id])):null,
-   cols=es?colsOf(es):[mixCol(ids)],c=cols[0],tip=es?`${nm}: ${forms(es)}`:nm;
-  m.area.forEach(po=>{poly(po,{color:c,fillColor:c,weight:sel?3.2:1.8,opacity:.95,fillOpacity:es?(sel?.6:.4):(sel?.3:.13)},es?cols:null).bindTooltip(tip,{sticky:true}).on("click",()=>openMix(ids));items.push({po,txt:es?forms(es):nm,sub:es?nm:"",sel:false})})});
- drawLabels()}
-// a place shared by several dialects: no single language gets selected, the box offers each of them as a button
+// ---- tiles: what is on the map at this moment (the same drawing is used with and without a word) ----
+const ZC=new WeakMap();
+function cutZones(mp,zs){if(!zs.length)return mp;const key=zs.map(z=>MZ.indexOf(z)).join();let m=ZC.get(mp);if(!m)ZC.set(mp,m=new Map());if(m.has(key))return m.get(key);
+ const d=safe(PC.difference,mp.map(toGJ),...zs.flatMap(z=>z.area.map(toGJ))),r=d?fromGJ(d):mp,out=r.length?r:null;m.set(key,out);return out}
+const inRing=(ll,r)=>{let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const[yi,xi]=r[i],[yj,xj]=r[j];if((yi>ll.lat)!==(yj>ll.lat)&&ll.lng<(xj-xi)*(ll.lat-yi)/(yj-yi)+xi)c=!c}return c};
+const inPoly=(ll,po)=>inRing(ll,po[0])&&!po.slice(1).some(h=>inRing(ll,h));
+const isSel=n=>n.id===S||(N[S]&&F(N[S],"h")&&anc(n).some(a=>a.id===S));
+let HIT=[];
+function wtiles(){const T=[],seen=new Set(),add=(n,mp,es)=>{if(mp&&mp.length&&!seen.has(n.id)){seen.add(n.id);T.push({n,mp,es})}};
+ if(HZ){nodes.filter(vis).forEach(n=>{const es=entFor(n);add(n,es?tshape(n):wshape(n),es)});return T}
+ W.ents.forEach((es,id)=>{const n=N[id];if(!E.has(id))return add(n,W.ws.get(id),es);
+  const rec=c=>{if(W.ents.has(c.id))return;if(E.has(c.id)&&c.kids.length)return c.kids.forEach(rec);add(c,tshape(c),es)};n.kids.forEach(rec)});   // a broken-up word area shows its dialects
+ return T}
+const ptiles=()=>nodes.filter(vis).map(n=>({n,mp:shape(n),es:null})).filter(t=>t.mp);
+function render(T){const byId=new Map(T.map(t=>[t.n.id,t]));
+ const zs=MZ.filter(m=>m.ids.every(id=>byId.has(id)&&(!W||byId.get(id).es)));   // shared zones are drawn once, on their own
+ const parts=[];T.forEach(t=>{const mp=cutZones(t.mp,zs.filter(m=>m.ids.includes(t.n.id)));mp&&mp.forEach(po=>parts.push({t,po,a:labelOf(po).area}))});parts.sort((x,y)=>y.a-x.a);
+ const tip=(pl,txt)=>pl.bindTooltip(txt,{sticky:true}).on("click",e=>clickAt(e.latlng));
+ parts.forEach(({t,po})=>{const n=t.n,es=t.es,cols=es?colsOf(es):[col(n)],sel=isSel(n),dash=disp(n),c=cols[0];
+  const o=es?{weight:sel?3.6:1.6,fillOpacity:sel?.6:dash?.22:.4}:{weight:sel?3.2:1.8,fillOpacity:dash?.05:sel?.3:.13};
+  tip(poly(po,{color:c,fillColor:c,opacity:.95,dashArray:dash?"5 5":null,...o},es?cols:null),n.name+(nat(n)?" "+nat(n):"")+(es?": "+forms(es):""));
+  HIT.push({ids:[n.id],po});items.push(es?{po,txt:forms(es),sub:n.name,sel}:{po,txt:n.name,sub:nat(n),sel})});
+ zs.forEach(m=>{const ids=m.ids.slice().sort(byName),nm=ids.map(id=>N[id].name).join(" + "),sel=ids.includes(S),dash=ids.some(id=>disp(N[id])),es=W?ids.flatMap(id=>byId.get(id).es):null,
+   cols=es?colsOf(es):[mixCol(ids)],c=cols[0],o=es?{weight:sel?3.6:1.6,fillOpacity:sel?.6:dash?.22:.4}:{weight:sel?3.2:1.8,fillOpacity:dash?.05:sel?.3:.13};
+  m.area.forEach(po=>{tip(poly(po,{color:c,fillColor:c,opacity:.95,dashArray:dash?"5 5":null,...o},es?cols:null),es?`${nm}: ${forms(es)}`:nm);HIT.push({ids,po});items.push({po,txt:es?forms(es):nm,sub:es?nm:"",sel:false})})});
+ if(W){const spots=new Map();   // one thick outline per cluster, with its oldest root written on it (roots that sit on the same spot are written together)
+  W.cls.forEach(c=>{if(!c.u)return;[[c.uN,null],[c.uD,"9 7"]].forEach(([u,d])=>u&&u.forEach(po=>L.polygon(po,{color:c.color,weight:4.5,fill:false,opacity:1,interactive:false,dashArray:d}).addTo(layer)));
+   const big=c.u.slice().sort((x,y)=>labelOf(y).area-labelOf(x).area)[0],l=labelOf(big),key=l.lat.toFixed(2)+","+l.lng.toFixed(2),r=c.root,txt=r.form||r.lang||"?",sb=r.form?r.lang:"";
+   const g=spots.get(key)||spots.set(key,{po:big,txt:[],sub:[]}).get(key);if(!g.txt.includes(txt))g.txt.push(txt);if(sb&&!g.sub.includes(sb))g.sub.push(sb)});
+  spots.forEach(g=>items.push({po:g.po,txt:g.txt.join(", "),sub:g.sub.join(" / "),cls:"root",sel:false}))}}
+// a click selects the place under the pointer; where several languages or dialects meet there, none is selected and the box offers each of them
+function clickAt(ll){const hit=new Set();HIT.forEach(h=>{if(inPoly(ll,h.po))h.ids.forEach(id=>hit.add(id))});const ids=[...hit].sort(byName);
+ if(ids.length>1)openMix(ids);else if(ids.length)pick(ids[0])}
+function draw(){layer.clearLayers();items=[];HIT=[];render(W?wtiles():ptiles());drawLabels()}
 function openMix(ids){S=null;draw();tree();showBox(`<div class="mixbox">${ids.map(id=>`<button class="mx" data-id="${id}">${esc(N[id].name)}</button>`).join("")}</div>`,true)}
-// word mode: every language/dialect with a word is its own polygon (children with their own word cut out), coloured by cluster (striped when it has several roots/words); then one outline per cluster
-function drawWord(){const parts=[];
- W.ws.forEach((mp,id)=>mp.forEach(po=>parts.push({id,po,a:labelOf(po).area})));parts.sort((x,y)=>y.a-x.a);
- parts.forEach(({id,po})=>{const n=N[id],es=W.ents.get(id),sel=id===S,cols=colsOf(es);
-  poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.6:1.6,opacity:.95,fillOpacity:sel?.6:.4},cols).bindTooltip(`${n.name}: ${forms(es)}`,{sticky:true}).on("click",()=>pick(id));
-  items.push({po,txt:forms(es),sub:n.name,sel})});
- W.mz.forEach(m=>{const ids=m.ids.slice().sort(byName),es=ids.flatMap(id=>W.ents.get(id)),cols=colsOf(es),sel=ids.includes(S),nm=ids.map(id=>N[id].name).join(" + ");
-  m.area.forEach(po=>{poly(po,{color:cols[0],fillColor:cols[0],weight:sel?3.6:1.6,opacity:.95,fillOpacity:sel?.6:.4},cols).bindTooltip(`${nm}: ${forms(es)}`,{sticky:true}).on("click",()=>openMix(ids));items.push({po,txt:forms(es),sub:nm,sel:false})})});
- W.cls.forEach(c=>{if(!c.u)return;c.u.forEach(po=>L.polygon(po,{color:c.color,weight:4.5,fill:false,opacity:1,interactive:false}).addTo(layer));
-  const big=c.u.slice().sort((x,y)=>labelOf(y).area-labelOf(x).area)[0],r=c.root;
-  items.push({po:big,txt:r.form||r.lang||"?",sub:r.form?r.lang:"",cls:"root",sel:false,color:c.color})})}
 function drawLabels(){labels.clearLayers();const ppd=256*Math.pow(2,map.getZoom())/360;let selShown=0;
  items.slice().reverse().forEach(it=>{const l=labelOf(it.po),px=l.w*ppd*Math.cos(l.lat*Math.PI/180);let fs=Math.min(34,px/(it.txt.length*.56));
   if(it.sel&&selShown<12){selShown++;fs=Math.max(fs,10)}else if(fs<9)return;
@@ -439,7 +453,7 @@ const drop=n=>{E.delete(n.id);n.kids.forEach(drop)};
 function pick(id){S=id;draw();box();fly(N[id]);tree()}            // select only, never breaks
 function go(id){const n=N[id];if(!n||n.name==="[…]")return;anc(n).forEach(a=>OPN.add(a.id));
  if(!has(n)){S=id;draw();box();tree();return}
- if(W&&!HZ)return pick(id);anc(n).forEach(a=>E.add(a.id));drop(n);S=id;draw();box();fly(n);tree()} // breaks parents, rejoins when an ancestor is clicked
+ anc(n).forEach(a=>E.add(a.id));drop(n);if(F(n,"h"))E.add(n.id);S=id;draw();box();fly(n);tree()} // breaks parents, rejoins when an ancestor is clicked; a group that is never drawn shows its children
 window.go=go;
 // ---- info box ----
 function chip(n){if(n.name==="[…]")return`<button class="chip ghost" disabled data-tip="${esc(n.note||"Further Glottolog branches outside this project")}">[…]</button>`;return`<button class="chip ${ok(n)?"":"ghost"}" onclick="go('${n.id}')">${F(n,"x")?"† ":""}${esc(n.name)}</button>`}
@@ -485,7 +499,7 @@ const HB={};
 // a node can only be broken up when all of its ancestors are broken up too (so under a joined language only the language shows)
 function prune(){const keep=new Set(),walk=n=>{if(E.has(n.id)&&(!N[n.p]||keep.has(n.p))){keep.add(n.id);n.kids.forEach(walk)}};nodes.filter(n=>!N[n.p]).forEach(walk);E=keep}
 function setH(m,b){E=new Set();nodes.forEach(n=>{if(!exp(n))return;
- if(m==="B"?!n.p:m==="L"?!F(n,"L")&&!F(n,"D"):m==="D")E.add(n.id)});prune();
+ if(m==="B"?!n.p&&!F(n,"L"):m==="L"?!F(n,"L")&&!F(n,"D"):m==="D")E.add(n.id)});prune();
  HZ=m;LASTH=m;S=null;draw();showBox('<p class="mu">Click a shape to open it. Click one of its descendants in this box to break it up; click its ancestor to join it again.</p>');
  document.querySelectorAll("#hz button").forEach(x=>x.classList.toggle("on",x===b));tree()}
 [["Families","F"],["Branches","B"],["Languages","L"],["Dialects","D"]].forEach(([t,m],i)=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>setH(m,b);HB[m]=b;$("#hz").append(b);if(!i)b.classList.add("on")});

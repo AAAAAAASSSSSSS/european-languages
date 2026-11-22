@@ -72,3 +72,5 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
 #box>p:first-child{padding-right:76px}#tip{overflow-wrap:anywhere}
 
 .mixbox{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding-right:76px}.mixbox .mx{min-width:140px;text-align:left}#box .note{font-size:12px;margin:8px 0 0}
+
+.leaflet-container .leaflet-interactive:focus,.leaflet-container svg path:focus,.leaflet-container svg:focus{outline:none!important}.leaflet-container{-webkit-tap-highlight-color:transparent}
