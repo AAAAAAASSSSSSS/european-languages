@@ -4,8 +4,10 @@ const ED=window.EDITS||{},INFO=ED.info||{};
 const ROWS=TREE.filter(t=>!(ED.remove||[]).includes(t[0])).map(t=>t.slice()).concat((ED.add||[]).map(t=>t.slice()));
 const RB={};ROWS.forEach(t=>RB[t[0]]=t);
 Object.entries(ED.rename||{}).forEach(([id,v])=>RB[id]&&(RB[id][1]=v));Object.entries(ED.parent||{}).forEach(([id,v])=>RB[id]&&(RB[id][2]=v));Object.entries(ED.note||{}).forEach(([id,v])=>RB[id]&&(RB[id][4]=v));Object.entries(ED.flags||{}).forEach(([id,v])=>RB[id]&&(RB[id][3]=v));
-const N={};ROWS.forEach(([id,name,p,f,note,code],i)=>N[id]={id,name,p,f,note,code,i,kids:[]});
+const F0=(n,c)=>n.f.includes(c);const N={};ROWS.forEach(([id,name,p,f,note,code],i)=>N[id]={id,name,p,f,note,code,i,kids:[]});
 const nodes=Object.values(N);nodes.forEach(n=>N[n.p]&&N[n.p].kids.push(n));
+// whatever descends from an extinct language is extinct too (Indo-Iranian is left as it is); a revived language is un-flagged in edits.js
+nodes.forEach(n=>{if(F0(n,"x")||n.name==="[…]")return;let t=N[n.p],ir=false,dead=false;while(t){if(t.name==="Indo-Iranian")ir=true;if(F0(t,"x"))dead=true;t=N[t.p]}if(dead&&!ir)n.f+="x"});
 const F=(n,c)=>n.f.includes(c), anc=n=>{const a=[];while(N[n.p]){n=N[n.p];a.push(n)}return a};
 const disp=n=>F(n,"s")||anc(n).some(a=>F(a,"s"));   // dialects of a dispersed language are dispersed too
 const byName=(a,b)=>N[a].name.localeCompare(N[b].name);
@@ -59,7 +61,7 @@ const mixCol=ids=>{const v=ids.map(id=>{const c=colX(N[id]);return[1,3,5].map(i=
 const DS=new Map();   // dialect shape without the zones it shares with others
 function dshape(n,zs){const base=shape(n);if(!base||!zs.length)return base;const key=n.id+"|"+zs.map(z=>MZ.indexOf(z)).join();if(DS.has(key))return DS.get(key);
  const d=safe(PC.difference,base.map(toGJ),...zs.flatMap(z=>z.area.map(toGJ)));const r=d?fromGJ(d):base;DS.set(key,r.length?r:null);return DS.get(key)}
-const vis=n=>has(n)&&!F(n,"h")&&(!n.p||E.has(n.p))&&!E.has(n.id);
+const vis=n=>has(n)&&(!n.p||E.has(n.p))&&!E.has(n.id);
 // ---- striped fills (a place with two words / a place shared by several dialects) are SVG patterns ----
 const SVGR=L.svg({padding:.4});SVGR.addTo(map);const NS="http://www.w3.org/2000/svg",SPID=new Map();let DEFS=null;
 function stripe(cols){const key=cols.join("|");if(SPID.has(key)&&DEFS&&DEFS.isConnected)return SPID.get(key);
@@ -93,7 +95,7 @@ function cutZones(mp,zs){if(!zs.length)return mp;const key=zs.map(z=>MZ.indexOf(
  const d=safe(PC.difference,mp.map(toGJ),...zs.flatMap(z=>z.area.map(toGJ))),r=d?fromGJ(d):mp,out=r.length?r:null;m.set(key,out);return out}
 const inRing=(ll,r)=>{let c=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const[yi,xi]=r[i],[yj,xj]=r[j];if((yi>ll.lat)!==(yj>ll.lat)&&ll.lng<(xj-xi)*(ll.lat-yi)/(yj-yi)+xi)c=!c}return c};
 const inPoly=(ll,po)=>inRing(ll,po[0])&&!po.slice(1).some(h=>inRing(ll,h));
-const isSel=n=>n.id===S||(N[S]&&F(N[S],"h")&&anc(n).some(a=>a.id===S));
+const isSel=n=>n.id===S;
 let HIT=[];
 function wtiles(){const T=[],seen=new Set(),add=(n,mp,es)=>{if(mp&&mp.length&&!seen.has(n.id)){seen.add(n.id);T.push({n,mp,es})}};
  if(HZ){nodes.filter(vis).forEach(n=>{const es=entFor(n);add(n,es?tshape(n):wshape(n),es)});return T}
@@ -133,7 +135,7 @@ const drop=n=>{E.delete(n.id);n.kids.forEach(drop)};
 function pick(id){S=id;draw();box();fly(N[id]);tree()}            // select only, never breaks
 function go(id){const n=N[id];if(!n||n.name==="[…]")return;anc(n).forEach(a=>OPN.add(a.id));
  if(!has(n)){S=id;draw();box();tree();return}
- anc(n).forEach(a=>E.add(a.id));drop(n);if(F(n,"h"))E.add(n.id);S=id;draw();box();fly(n);tree()} // breaks parents, rejoins when an ancestor is clicked; a group that is never drawn shows its children
+ anc(n).forEach(a=>E.add(a.id));drop(n);S=id;draw();box();fly(n);tree()} // breaks parents, rejoins when an ancestor is clicked
 window.go=go;
 // ---- info box ----
 function chip(n){if(n.name==="[…]")return`<button class="chip ghost" disabled data-tip="${esc(n.note||"Further Glottolog branches outside this project")}">[…]</button>`;return`<button class="chip ${ok(n)?"":"ghost"}" onclick="go('${n.id}')">${F(n,"x")?"† ":""}${esc(n.name)}</button>`}
@@ -164,7 +166,7 @@ function box(){const n=N[S];if(!n||n.name==="[…]")return;const up=N[n.p],bd=[]
   +(code?ref("https://iso639-3.sil.org/code/"+code,`ISO 639-3: ${code}`+(RETIRED[code]?` (${RETIRED[code]})`:/^q[a-t][a-z]$/.test(code)?" (private-use code, not an official language code)":"")):"")
   +(inf.links||[]).map(l=>ref(l.url,l.tip||(l.url?defTip(l.url):""))).join("");
  const lnk=i=>K[(gc?1:0)+(code?1:0)+i];
- if(F(n,"x"))bd.push("extinct");if(F(n,"d"))bd.push("disputed");if(disp(n))bd.push("dispersed");if(F(n,"n"))bd.push("outside Europe");
+ if(F(n,"x"))bd.push("extinct");if(F(n,"d"))bd.push("disputed");if(disp(n))bd.push("dispersed");
  (inf.badges||[]).forEach(b=>bd.push(b));
  const e=W&&W.ents.get(n.id),facts=(inf.facts||[]).map(f=>{const rs=[].concat(f.ref==null?[]:f.ref).map(lnk).filter(Boolean);return`<p>${esc(f.t)}${rs.map(r=>refA(r.l,r.u,r.t)).join("")}</p>`}).join("");
  const wl=e?`<p>${esc(W.w.name)}: <b>${esc(forms(e))}</b>${[...new Map(e.filter(x=>x.src).map(x=>[x.src[0],x.src])).values()].map(s=>{const k=K.find(q=>q.u===s[0]);return k?refA(k.l,k.u,k.t):ref(s[0],s[1])}).join("")} <button onclick="wordsAt('${n.id}')">Etymology</button></p>`:"";
@@ -178,8 +180,10 @@ function box(){const n=N[S];if(!n||n.name==="[…]")return;const up=N[n.p],bd=[]
 const HB={};
 // a node can only be broken up when all of its ancestors are broken up too (so under a joined language only the language shows)
 function prune(){const keep=new Set(),walk=n=>{if(E.has(n.id)&&(!N[n.p]||keep.has(n.p))){keep.add(n.id);n.kids.forEach(walk)}};nodes.filter(n=>!N[n.p]).forEach(walk);E=keep}
+// Branches level: nodes flagged B (Romance, Slavic, Germanic, Arabic, Goidelic ...) are the branches; everything above them is broken up. A family without any B node falls back to its first split.
+const hasB=new Set();nodes.filter(n=>F(n,"B")).forEach(n=>anc(n).forEach(x=>hasB.add(x.id)));
 function setH(m,b){E=new Set();nodes.forEach(n=>{if(!exp(n))return;
- if(m==="B"?!n.p&&!F(n,"L"):m==="L"?!F(n,"L")&&!F(n,"D"):m==="D")E.add(n.id)});prune();
+ if(m==="B"?hasB.has(n.id)||(!n.p&&!F(n,"L")):m==="L"?!F(n,"L")&&!F(n,"D"):m==="D")E.add(n.id)});prune();
  HZ=m;LASTH=m;S=null;draw();showBox('<p class="mu">Click a shape to open it. Click one of its descendants in this box to break it up; click its ancestor to join it again.</p>');
  document.querySelectorAll("#hz button").forEach(x=>x.classList.toggle("on",x===b));tree()}
 [["Families","F"],["Branches","B"],["Languages","L"],["Dialects","D"]].forEach(([t,m],i)=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>setH(m,b);HB[m]=b;$("#hz").append(b);if(!i)b.classList.add("on")});
@@ -205,7 +209,7 @@ function tree(center){hideTip();const t=$("#tree");if(!t.classList.contains("ope
    if(hl)ph+=`<path class="hi" d="${d}"/>`;else pn+=`<path class="${!it.ph&&F(n,"d")?"dot":""}" d="${d}"/>`}   // the pink branch is drawn last, so it always wins
   if(it.ph){boxes+=`<button class="tb ph" style="left:${it.x}px;top:${it.y}px" data-id="${n.id}" data-ph="1" data-tip="Open the subdivisions of ${esc(n.name)}"><span>[…]</span></button>`;return}
   const k=ok(n),m=q&&n.name.toLowerCase().includes(q),en=W&&W.ents.get(n.id),dots=n.name==="[…]",ta=natAll(n);
-  boxes+=`<button class="tb ${k?"":"ghost"} ${dots?"dots":""} ${n.id===S?"sel":""} ${q?(m?"hit":"dim"):""}" style="left:${it.x}px;top:${it.y}px;border-left-color:${col(n)}" data-id="${n.id}" ${dots?`data-tip="${esc(n.note||"Further Glottolog branches outside this project")}"`:`title="${esc(n.name)}${k?"":F(n,"x")?" (extinct)":" (no polygon)"}"`}><span>${F(n,"x")?"† ":""}${esc(n.name)}</span>${nat(n)||en?`<small class="r"><span ${ta?`data-tip="${esc(ta)}"`:""}>${esc(nat(n))}</span>${en?`<i>(${esc(forms(en))})</i>`:""}</small>`:""}</button>`;
+  boxes+=`<button class="tb ${k?"":"ghost"} ${dots?"dots":""} ${n.id===S?"sel":""} ${q?(m?"hit":"dim"):""}" style="left:${it.x}px;top:${it.y}px;border-left-color:${col(n)}" data-id="${n.id}" ${dots?`data-tip="${esc(n.note||"Further Glottolog branches outside this project")}"`:`title="${esc(n.name)}${F(n,"x")?" (extinct)":""}"`}><span>${F(n,"x")?"† ":""}${esc(n.name)}</span>${nat(n)||en?`<small class="r"><span ${ta?`data-tip="${esc(ta)}"`:""}>${esc(nat(n))}</span>${en?`<i>(${esc(forms(en))})</i>`:""}</small>`:""}</button>`;
   if(n.kids.length)boxes+=`<button class="tg2 ${hi.has(n.id)?"hi":""}" style="left:${it.x+154}px;top:${it.y+9}px" data-t="${n.id}" title="${OPN.has(n.id)?"Close":"Open"} the subdivisions of ${esc(n.name)}">${OPN.has(n.id)?"[-]":"[+]"}</button>`});
  $("#tc").style.cssText=`width:${w}px;height:${h}px`;$("#tc").innerHTML=`<svg width="${w}" height="${h}">${pn}${ph}</svg>${boxes}`;
  if(center&&S){const f=$(`#tc .tb[data-id="${S}"]`);f&&$("#tw").scrollTo({left:Math.max(0,f.offsetLeft-$("#tw").clientWidth/2+77),top:Math.max(0,f.offsetTop-$("#tw").clientHeight/2+19)})}
