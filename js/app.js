@@ -1,6 +1,6 @@
 (()=>{
 const $=s=>document.querySelector(s), H=document.documentElement, esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const ED=window.EDITS||{},INFO=ED.info||{};
+const ED=(()=>{const a=window.EDITS||{},b=window.EDITS2||{},o={};["remove","add"].forEach(k=>o[k]=[...(a[k]||[]),...(b[k]||[])]);["rename","parent","flags","note","native","info"].forEach(k=>o[k]={...(a[k]||{}),...(b[k]||{})});return o})(),INFO=ED.info||{};
 const ROWS=TREE.filter(t=>!(ED.remove||[]).includes(t[0])).map(t=>t.slice()).concat((ED.add||[]).map(t=>t.slice()));
 const RB={};ROWS.forEach(t=>RB[t[0]]=t);
 Object.entries(ED.rename||{}).forEach(([id,v])=>RB[id]&&(RB[id][1]=v));Object.entries(ED.parent||{}).forEach(([id,v])=>RB[id]&&(RB[id][2]=v));Object.entries(ED.note||{}).forEach(([id,v])=>RB[id]&&(RB[id][4]=v));Object.entries(ED.flags||{}).forEach(([id,v])=>RB[id]&&(RB[id][3]=v));
@@ -19,6 +19,7 @@ const AR={};
 const P=id=>AR[id]||(AR[id]=(AREAS[id]||[]).map(po=>po.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o})));
 const toGJ=po=>po.map(r=>r.map(([la,ln])=>[ln,la])), ringA=r=>{let s=0;for(let i=0;i<r.length-1;i++)s+=r[i][0]*r[i+1][1]-r[i+1][0]*r[i][1];return Math.abs(s)/2},
  fromGJ=mp=>mp.map(po=>po.filter((r,i)=>!i||ringA(r)>.02).map(r=>r.map(([x,y])=>[y,x])));   // tiny gaps between hand-drawn neighbours are filled; real enclaves (> 0.02 sq. degrees) stay
+const DISPP=window.DISPP||{};
 const MZ=(window.MIXED||[]).map(m=>({ids:m.ids,area:m.area.map(po=>po.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o}))}));
 const SH={};
 function shape(n){if(n.id in SH)return SH[n.id];const parts=P(n.id).map(toGJ);MZ.forEach(m=>m.ids.includes(n.id)&&m.area.forEach(po=>parts.push(toGJ(po))));n.kids.forEach(k=>{const s=shape(k);if(s)s.forEach(po=>parts.push(toGJ(po)))});
@@ -109,7 +110,8 @@ function render(T){const byId=new Map(T.map(t=>[t.n.id,t]));
  const tip=(pl,txt)=>pl.bindTooltip(txt,{sticky:true}).on("click",e=>clickAt(e.latlng));
  parts.forEach(({t,po})=>{const n=t.n,es=t.es,cols=es?colsOf(es):[col(n)],sel=isSel(n),dash=disp(n),c=cols[0];
   const o=es?{weight:sel?3.6:1.6,fillOpacity:sel?.6:dash?.22:.4}:{weight:sel?3.2:1.8,fillOpacity:dash?.05:sel?.3:.13};
-  tip(poly(po,{color:c,fillColor:c,opacity:.95,dashArray:dash?"5 5":null,...o},es?cols:null),n.name+(nat(n)?" "+nat(n):"")+(es?": "+forms(es):""));
+  const dp=dash||dispPart(n,po);if(dp&&!dash){o.fillOpacity=es?(sel?.6:.22):(sel?.3:.05)}
+  tip(poly(po,{color:c,fillColor:c,opacity:.95,dashArray:dp?"5 5":null,...o},es?cols:null),n.name+(nat(n)?" "+nat(n):"")+(es?": "+forms(es):""));
   HIT.push({ids:[n.id],po});items.push(es?{po,txt:forms(es),sub:n.name,sel}:{po,txt:n.name,sub:nat(n),sel})});
  zs.forEach(m=>{const ids=m.ids.slice().sort(byName),nm=ids.map(id=>N[id].name).join(" + "),sel=ids.includes(S),dash=ids.some(id=>disp(N[id])),es=W?ids.flatMap(id=>byId.get(id).es):null,
    cols=es?colsOf(es):[mixCol(ids)],c=cols[0],o=es?{weight:sel?3.6:1.6,fillOpacity:sel?.6:dash?.22:.4}:{weight:sel?3.2:1.8,fillOpacity:dash?.05:sel?.3:.13};
@@ -119,6 +121,8 @@ function render(T){const byId=new Map(T.map(t=>[t.n.id,t]));
    const big=c.u.slice().sort((x,y)=>labelOf(y).area-labelOf(x).area)[0],l=labelOf(big),key=l.lat.toFixed(2)+","+l.lng.toFixed(2),r=c.root,txt=r.form||r.lang||"?",sb=r.form?r.lang:"";
    const g=spots.get(key)||spots.set(key,{po:big,txt:[],sub:[]}).get(key);if(!g.txt.includes(txt))g.txt.push(txt);if(sb&&!g.sub.includes(sb))g.sub.push(sb)});
   spots.forEach(g=>items.push({po:g.po,txt:g.txt.join(", "),sub:g.sub.join(" / "),cls:"root",sel:false}))}}
+// some polygons of a dialect are dispersed and some are not: dotted only while the dialect itself is on the map
+function dispPart(n,po){const d=DISPP[n.id];if(!d)return false;const l=labelOf(po);return d.some(k=>{const q=P(n.id)[k];return q&&inPoly({lat:l.lat,lng:l.lng},q)})}
 // a click selects the place under the pointer; where several languages or dialects meet there, none is selected and the box offers each of them
 function clickAt(ll){const hit=new Set();HIT.forEach(h=>{if(inPoly(ll,h.po))h.ids.forEach(id=>hit.add(id))});const ids=[...hit].sort(byName);
  if(ids.length>1)openMix(ids);else if(ids.length)pick(ids[0])}
@@ -158,14 +162,20 @@ function closeBox(){$("#box").hidden=true;if(S){S=null;draw();tree()}}
 const hostOf=u=>{try{return new URL(u).hostname}catch(e){return u}};
 const defTip=u=>{try{const x=new URL(u),t=decodeURIComponent(x.pathname.split("/").pop()).replace(/_/g," ");return x.hostname.includes("wikipedia")?`Wikipedia (${x.hostname.split(".")[0]}): ${t}`:x.hostname.includes("glottolog")?`Glottolog: ${t}`:`${x.hostname}: ${t}`}catch(e){return u}};
 // every link in the box is a letter in brackets: [a], [b], [c] ... in order of appearance; the hover holds the explanation
+// a place has both dotted (dispersed) and full polygons somewhere inside it
+const MD=new Map();
+function mixedDisp(n){if(MD.has(n.id))return MD.get(n.id);let dot=false,full=false;
+ const walk=x=>{const own=P(x.id);if(own.length){const d=DISPP[x.id]||[];own.forEach((q,k)=>{if(disp(x)||d.includes(k))dot=true;else full=true})}x.kids.forEach(walk)};walk(n);
+ const r=dot&&full;MD.set(n.id,r);return r}
 function box(){const n=N[S];if(!n||n.name==="[…]")return;const up=N[n.p],bd=[],gc=F(n,"p")&&!n.code?null:gcode(n),inf=INFO[n.id]||{},K=[];
  const ref=(u,t)=>{const l=String.fromCharCode(97+K.length);K.push({l,u,t});return refA(l,u,t)};
  const refA=(l,u,t)=>u?`<sup><a class="rf" href="${esc(u)}" target="_blank" rel="noopener" data-tip="${esc(t)}" aria-label="${esc(t)}">[${l}]</a></sup>`:`<sup><span class="rf" tabindex="0" data-tip="${esc(t)}">[${l}]</span></sup>`;
  const m=/^ISO 639-3: (\w{3})$/.exec(n.note||""),code=m&&m[1];
  const refs=(gc?ref(GLURL+gc,n.code?"Open in Glottolog":"Nearest Glottolog entry"):"")
   +(code?ref("https://iso639-3.sil.org/code/"+code,`ISO 639-3: ${code}`+(RETIRED[code]?` (${RETIRED[code]})`:/^q[a-t][a-z]$/.test(code)?" (private-use code, not an official language code)":"")):"")
-  +(inf.links||[]).map(l=>ref(l.url,l.tip||(l.url?defTip(l.url):""))).join("");
+  +(inf.links||[]).map(l=>ref(l.url,l.tip||(l.url?defTip(l.url):""))).join("")+(mixedDisp(n)?ref(null,"The dotted regions represent dispersed populations."):"");
  const lnk=i=>K[(gc?1:0)+(code?1:0)+i];
+ const mixedLink=mixedDisp(n)?"":null;
  if(F(n,"x"))bd.push("extinct");if(F(n,"d"))bd.push("disputed");if(disp(n))bd.push("dispersed");
  (inf.badges||[]).forEach(b=>bd.push(b));
  const e=W&&W.ents.get(n.id),facts=(inf.facts||[]).map(f=>{const rs=[].concat(f.ref==null?[]:f.ref).map(lnk).filter(Boolean);return`<p>${esc(f.t)}${rs.map(r=>refA(r.l,r.u,r.t)).join("")}</p>`}).join("");
@@ -188,11 +198,11 @@ function setH(m,b){E=new Set();nodes.forEach(n=>{if(!exp(n))return;
  document.querySelectorAll("#hz button").forEach(x=>x.classList.toggle("on",x===b));tree()}
 [["Families","F"],["Branches","B"],["Languages","L"],["Dialects","D"]].forEach(([t,m],i)=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>setH(m,b);HB[m]=b;$("#hz").append(b);if(!i)b.classList.add("on")});
 // ---- panels: only one open at a time ----
-const panels=["#tree","#words","#cpanel"];
+const panels=["#tree","#words","#cpanel","#vpanel"];
 
 const isOpen=id=>$(id).classList.contains("open"), closeP=id=>$(id).classList.remove("open");
 // ---- language tree (left to right, elbow lines, [+]/[-] on every branch) ----
-const CW=224,RH=42,OPN=new Set();let TP=null;
+const CW=224,RH=42,OPN=new Set();let TP=null,MI=0,FOCUSHIT=false;
 function build(){const its=[];let row=0,md=0;
  const rec=(n,d,par,ph)=>{const it={n,d,par,ph,kids:[]};its.push(it);md=Math.max(md,d);
   if(ph){it.y=row++*RH;return it}
@@ -213,7 +223,9 @@ function tree(center){hideTip();const t=$("#tree");if(!t.classList.contains("ope
   if(n.kids.length)boxes+=`<button class="tg2 ${hi.has(n.id)?"hi":""}" style="left:${it.x+154}px;top:${it.y+9}px" data-t="${n.id}" title="${OPN.has(n.id)?"Close":"Open"} the subdivisions of ${esc(n.name)}">${OPN.has(n.id)?"[-]":"[+]"}</button>`});
  $("#tc").style.cssText=`width:${w}px;height:${h}px`;$("#tc").innerHTML=`<svg width="${w}" height="${h}">${pn}${ph}</svg>${boxes}`;
  if(center&&S){const f=$(`#tc .tb[data-id="${S}"]`);f&&$("#tw").scrollTo({left:Math.max(0,f.offsetLeft-$("#tw").clientWidth/2+77),top:Math.max(0,f.offsetTop-$("#tw").clientHeight/2+19)})}
- if(q){const f=$("#tc .hit");f&&$("#tw").scrollTo({left:Math.max(0,f.offsetLeft-120),top:Math.max(0,f.offsetTop-120)})}}
+ const hits=[...document.querySelectorAll("#tc .tb.hit")];if(MI>=hits.length)MI=0;$("#tcnt").textContent=(hits.length?MI+1:0)+"/"+hits.length;
+ if(q&&hits[MI]){const f=hits[MI];f.classList.add("cur");if(FOCUSHIT){const w=$("#tw");w.scrollTo({left:Math.max(0,f.offsetLeft-w.clientWidth/2+77),top:Math.max(0,f.offsetTop-w.clientHeight/2+19)})}}
+ FOCUSHIT=false}
 $("#tc").addEventListener("click",e=>{const g=e.target.closest(".tg2");
  if(g){const id=g.dataset.t;OPN.has(id)?OPN.delete(id):OPN.add(id);return tree()}
  const b=e.target.closest(".tb");if(!b)return;const n=N[b.dataset.id];
@@ -221,7 +233,9 @@ $("#tc").addEventListener("click",e=>{const g=e.target.closest(".tg2");
  go(n.id)});
 $("#tg").onclick=()=>{const o=!isOpen("#tree");panels.forEach(closeP);if(o){$("#tree").classList.add("open");tree(true)}};$("#tx").onclick=()=>closeP("#tree");
 $("#te").onclick=()=>{nodes.forEach(n=>n.kids.length&&OPN.add(n.id));tree()};$("#tf").onclick=()=>{OPN.clear();tree()};
-$("#tq").oninput=()=>{const q=$("#tq").value.trim().toLowerCase();if(q)nodes.forEach(n=>n.name.toLowerCase().includes(q)&&anc(n).forEach(a=>OPN.add(a.id)));tree()};
+const stepHit=d=>{const n=document.querySelectorAll("#tc .tb.hit").length;if(!n)return;MI=(MI+d+n)%n;FOCUSHIT=true;tree()};
+$("#tup").onclick=()=>stepHit(-1);$("#tdn").onclick=()=>stepHit(1);$("#tq").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();stepHit(e.shiftKey?-1:1)}};
+$("#tq").oninput=()=>{MI=0;FOCUSHIT=true;const q=$("#tq").value.trim().toLowerCase();if(q)nodes.forEach(n=>n.name.toLowerCase().includes(q)&&anc(n).forEach(a=>OPN.add(a.id)));tree()};
 addEventListener("keydown",e=>{if(e.key==="Escape"){panels.forEach(closeP)}});
 let dr=null;const tw=$("#tw");tw.addEventListener("pointerdown",e=>{if(e.target.closest(".tb,.tg2"))return;dr={x:e.clientX,y:e.clientY,l:tw.scrollLeft,t:tw.scrollTop};tw.classList.add("drag")});
 addEventListener("pointermove",e=>{if(dr){tw.scrollLeft=dr.l-(e.clientX-dr.x);tw.scrollTop=dr.t-(e.clientY-dr.y)}});addEventListener("pointerup",()=>{dr=null;tw.classList.remove("drag")});
@@ -302,6 +316,51 @@ function wheel(){const root=upgma(LNG),leaves=[],walk=n=>n.kids.length?n.kids.fo
 $("#box").addEventListener("click",e=>{const b=e.target.closest(".mx");if(b)go(b.dataset.id)});
 $("#cl").onclick=()=>{const o=!isOpen("#cpanel");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#cpanel").classList.add("open");renderC()}};
 $("#cm").onclick=e=>{const b=e.target.closest("button");if(b){CM=b.dataset.m;renderC()}};$("#cx").onclick=()=>closeP("#cpanel");
+
+// ---- voting: what the project still lacks ----
+const VAPI=(window.VOTE_API||"").replace(/\/$/,"");
+const aliveN=n=>!F(n,"x")&&(!n.kids.length||n.kids.every(k=>k.name==="[…]")||n.kids.some(k=>k.name!=="[…]"&&aliveN(k)));
+function votables(){   // languages: alive, without any polygon of their own or below; words: without a single entry
+ const ls=nodes.filter(n=>n.name!=="[…]"&&!has(n)&&aliveN(n)),cnt={};ls.forEach(n=>cnt[n.name]=(cnt[n.name]||0)+1);
+ const lang=ls.map(n=>({id:n.id,label:cnt[n.name]>1&&N[n.p]?`${n.name} (${N[n.p].name})`:n.name})).sort((x,y)=>x.label.localeCompare(y.label));
+ const ws=SECS.flatMap(s=>s.words.map(w=>({id:w.id,name:w.name,sec:s.name,na:w.na}))).filter(w=>w.na),wc={};ws.forEach(w=>wc[w.name]=(wc[w.name]||0)+1);
+ const word=ws.map(w=>({id:w.id,label:wc[w.name]>1?`${w.name} (${w.sec})`:w.name})).sort((x,y)=>x.label.localeCompare(y.label));
+ return{lang,word}}
+const demoDB={get(){try{return JSON.parse(localStorage.getItem("vote-demo")||"[]")}catch(e){return[]}},set(v){try{localStorage.setItem("vote-demo",JSON.stringify(v))}catch(e){}}};
+function demoState(V){const ok={lang:new Set(V.lang.map(x=>x.id)),word:new Set(V.word.map(x=>x.id))},all=demoDB.get().filter(v=>ok[v.kind].has(v.item)),st={recent:{},ranks:{},mine:{}};
+ ["lang","word"].forEach(k=>{const r=all.filter(v=>v.kind===k),c={};r.forEach(v=>c[v.item]=(c[v.item]||0)+1);
+  st.recent[k]=r.slice(-10).reverse().map(v=>({item:v.item,ts:v.ts,place:"demo"}));st.ranks[k]=Object.entries(c).map(([item,n])=>({item,n}));st.mine[k]=r.length>0});return st}
+async function vState(V){if(!VAPI)return demoState(V);try{const r=await fetch(VAPI+"/state");return await r.json()}catch(e){return null}}
+async function vSend(kind,item,V){if(!VAPI){const st=demoState(V);if(st.mine[kind])return{error:"already"};const d=demoDB.get();d.push({kind,item,ts:Date.now()});demoDB.set(d);return{ok:true}}
+ try{const r=await fetch(VAPI+"/vote",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind,item})});return await r.json()}catch(e){return{error:"network"}}}
+const fmtTime=ts=>{const d=new Date(ts),t=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});return d.toDateString()===new Date().toDateString()?t:d.toLocaleDateString([],{day:"numeric",month:"short"})+" "+t};
+const fmtPlace=p=>{if(!p)return"";if(p==="demo")return"demo mode";const[c,r]=p.split("|");let n=c;try{n=new Intl.DisplayNames([navigator.language||"en"],{type:"region"}).of(c)||c}catch(e){}return r?`${n}, ${r}`:n};
+let VV=null,VST=null;const VSORT={lang:-1,word:-1};   // -1 = descending (triangle points down)
+const LOCK="You have already voted for this section. Wait until it is added to vote again.";
+const VC={lang:{items:[],id:null},word:{items:[],id:null}};
+const normQ=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+const VK=[["lang","#vsl","#vls","#vlsl","#vml"],["word","#vsw","#vws","#vwsl","#vmw"]];
+function vBtns(){VK.forEach(([k,b,s,l,m])=>{const lock=!!(VST&&VST.mine[k]),none=!(VV&&VV[k].length);$(b).disabled=lock||none||!VC[k].id;$(s).disabled=lock||none;$(m).textContent=lock?LOCK:none?"Nothing left to vote for here.":""})}
+function vRender(){if(!VV)return;const lab={lang:Object.fromEntries(VV.lang.map(x=>[x.id,x.label])),word:Object.fromEntries(VV.word.map(x=>[x.id,x.label]))};
+ VC.lang.items=VV.lang;VC.word.items=VV.word;
+ const st=VST||{recent:{lang:[],word:[]},ranks:{lang:[],word:[]},mine:{lang:false,word:false}};vBtns();
+ [["lang","#vrl"],["word","#vrw"]].forEach(([k,id])=>{$(id).innerHTML=(st.recent[k]||[]).filter(r=>lab[k][r.item]).slice(0,10).map(r=>`<li>${esc(lab[k][r.item])}<small>${r.ts?esc(fmtTime(r.ts)):""}${r.place?" · "+esc(fmtPlace(r.place)):""}</small></li>`).join("")||'<li class="mu">No submissions yet.</li>'});
+ [["lang","#vtl","#vol"],["word","#vtw","#vow"]].forEach(([k,id,btn])=>{const rows=(st.ranks[k]||[]).filter(r=>lab[k][r.item]).sort((x,y)=>VSORT[k]*(x.n-y.n)||lab[k][x.item].localeCompare(lab[k][y.item]));
+  $(id).innerHTML=rows.map(r=>`<li><span class="n">${r.n}</span>${esc(lab[k][r.item])}</li>`).join("")||'<li class="mu">No votes yet.</li>';$(btn).innerHTML=`<i class="tri ${VSORT[k]<0?"dn":"up"}"></i>`})}
+// the picker is a search box: nothing is listed until something is typed, then every entry that contains those letters in that order
+VK.forEach(([k,b,s,l])=>{const el=$(s),ul=$(l),pick=li=>{VC[k].id=li.dataset.id;el.value=li.textContent;ul.hidden=true;vBtns()};
+ el.oninput=()=>{VC[k].id=null;vBtns();const q=normQ(el.value.trim());if(!q){ul.innerHTML="";ul.hidden=true;return}
+  const m=VC[k].items.filter(x=>normQ(x.label).includes(q)).slice(0,300);ul.innerHTML=m.map(x=>`<li data-id="${esc(x.id)}">${esc(x.label)}</li>`).join("")||'<li class="none">No match</li>';ul.hidden=false};
+ el.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const f=ul.querySelector("li[data-id]");if(f)pick(f)}};
+ ul.onclick=e=>{const li=e.target.closest("li[data-id]");if(li)pick(li)}});
+document.addEventListener("click",e=>{if(!e.target.closest(".combo"))document.querySelectorAll(".vsug").forEach(u=>u.hidden=true)});
+async function vOpen(){VV=votables();VST=await vState(VV);vRender()}
+$("#vt").onclick=()=>{const o=!isOpen("#vpanel");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#vpanel").classList.add("open");vOpen()}};$("#vx").onclick=()=>closeP("#vpanel");
+$("#vol").onclick=()=>{VSORT.lang*=-1;vRender()};$("#vow").onclick=()=>{VSORT.word*=-1;vRender()};
+VK.forEach(([k,b,s,l,m])=>$(b).onclick=async()=>{const item=VC[k].id;if(!item)return;$(b).disabled=true;const r=await vSend(k,item,VV);
+ if(r&&r.error==="already")$(m).textContent=LOCK;else if(r&&r.error)$(m).textContent=r.error==="not_votable"?"This one was just added, so it can't be voted for any more.":"Could not reach the voting server. Try again in a moment.";
+ else{$(s).value="";VC[k].id=null}
+ VST=await vState(VV);vRender()});
 // ---- theme, language ----
 const SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',MOON='<svg viewBox="0 0 24 24"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg>';
 function theme(t){H.dataset.theme=t;$("#th").innerHTML=t==="dark"?SUN:MOON;$("#th").title=t==="dark"?"Light mode":"Dark mode";drawBase();tiles();draw();tree()}

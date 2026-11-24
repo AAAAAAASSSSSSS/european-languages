@@ -1,0 +1,13 @@
+name = "europe-languages-vote"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+[vars]
+# the page that hosts the app (CORS) and the file that lists what can still be voted for
+ALLOWED_ORIGIN = "https://YOUR-SITE.example"
+VOTABLE_URL = "https://YOUR-SITE.example/data/votable.json"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "europe_votes"
+database_id = "PASTE-THE-ID-FROM-wrangler-d1-create"
