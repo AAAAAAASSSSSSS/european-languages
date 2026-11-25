@@ -10,6 +10,9 @@ const COLL=new Intl.Collator("en",{sensitivity:"base",numeric:true}),cmpN=(x,y)=
 nodes.forEach(n=>n.kids.sort(cmpN));const ROOTS=nodes.filter(n=>!N[n.p]).sort(cmpN);
 // whatever descends from an extinct language is extinct too (Indo-Iranian is left as it is); a revived language is un-flagged in edits.js
 nodes.forEach(n=>{if(F0(n,"x")||n.name==="[…]")return;let t=N[n.p],ir=false,dead=false;while(t){if(t.name==="Indo-Iranian")ir=true;if(F0(t,"x"))dead=true;t=N[t.p]}if(dead&&!ir)n.f+="x"});
+{const inIr=n=>{while(n){if(n.name==="Indo-Iranian")return true;n=N[n.p]}return false};   // and upwards: a category with nothing but extinct languages below it
+ const up=n=>{n.kids.forEach(up);if(F0(n,"x")||n.name==="[…]"||F0(n,"L")||F0(n,"D")||!n.kids.length||inIr(n)||n.kids.some(k=>k.name==="[…]"))return;if(n.kids.every(k=>F0(k,"x")))n.f+="x"};
+ nodes.filter(n=>!N[n.p]).forEach(up)}
 const F=(n,c)=>n.f.includes(c), anc=n=>{const a=[];while(N[n.p]){n=N[n.p];a.push(n)}return a};
 const disp=n=>F(n,"s")||anc(n).some(a=>F(a,"s"));   // dialects of a dispersed language are dispersed too
 const byName=(a,b)=>N[a].name.localeCompare(N[b].name);
@@ -38,7 +41,11 @@ function labelOf(po){let r=LB.get(po);if(r)return r;const ring=po[0],b=bb(ring);
 // ---- state ----
 let HINT1=false,HINT2=false,PEND2=false;const hint2=()=>{if(HINT2){$("#box").hidden=true;return}HINT2=true;showBox('<p class="mu">Word mode: each shape carries its word, shapes of one cluster share a colour, and the thick outline carries the oldest known root. A place with two words is striped.</p>')};let E=new Set(),S=null,MODE="street",HZ="F",LASTH="F",W=null,WSEL=null,items=[];
 const dark=()=>H.dataset.theme==="dark";
-const col=n=>`hsl(${(n.i*137.508)%360},${dark()?66:60}%,${dark()?62:40}%)`;
+// every child of a family gets its own hue (golden-angle steps from a family-specific start) and brothers alternate in lightness
+nodes.forEach(n=>n.kids.forEach((k,i)=>k.si=i));ROOTS.forEach((k,i)=>k.si=i);
+const hash=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%360;return h};
+const hueOf=n=>(hash(n.p||"root")+n.si*137.508)%360,litOf=n=>(dark()?62:40)+(n.si%2?8:-6);
+const col=n=>`hsl(${hueOf(n)},${dark()?66:60}%,${litOf(n)}%)`;
 // cluster colours: red, blue, green, yellow, orange, then more (no black / white)
 const PALC=["#e6194b","#2f6fe0","#2fa84f","#f2cf1d","#f58231","#911eb4","#17b8b8","#e056a8","#8b5a2b","#7f9a1c"];
 const hex=(h,s,l)=>{s/=100;l/=100;const f=n=>{const k=(n+h/30)%12,a=s*Math.min(l,1-l);return Math.round(255*(l-a*Math.max(-1,Math.min(k-3,9-k,1)))).toString(16).padStart(2,"0")};return"#"+f(0)+f(8)+f(4)};
@@ -59,7 +66,7 @@ function tiles(){tl.forEach(x=>x.remove());tl=[];
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:18}))}
  else tl.push(L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap contributors"}));
  tl.forEach(x=>x.addTo(map));map.getContainer().classList.toggle("inv",dark()&&MODE==="street")}
-const colX=n=>hex((n.i*137.508)%360,dark()?66:60,dark()?62:40);
+const colX=n=>hex(hueOf(n),dark()?66:60,litOf(n));
 const mixCol=ids=>{const v=ids.map(id=>{const c=colX(N[id]);return[1,3,5].map(i=>parseInt(c.slice(i,i+2),16))});return"#"+[0,1,2].map(k=>Math.round(v.reduce((s,x)=>s+x[k],0)/v.length).toString(16).padStart(2,"0")).join("")};
 const DS=new Map();   // dialect shape without the zones it shares with others
 function dshape(n,zs){const base=shape(n);if(!base||!zs.length)return base;const key=n.id+"|"+zs.map(z=>MZ.indexOf(z)).join();if(DS.has(key))return DS.get(key);
@@ -343,7 +350,7 @@ $("#cm").onclick=e=>{const b=e.target.closest("button");if(b){CM=b.dataset.m;ren
 
 // ---- voting: what the project still lacks ----
 const VAPI=(window.VOTE_API||"").replace(/\/$/,"");
-const aliveN=n=>!F(n,"x")&&(!n.kids.length||n.kids.every(k=>k.name==="[…]")||n.kids.some(k=>k.name!=="[…]"&&aliveN(k)));
+const aliveN=n=>!F(n,"x")&&(!n.kids.length||n.kids.some(k=>k.name==="[…]")||n.kids.some(aliveN));
 function votables(){   // languages: alive, without any polygon of their own or below; words: without a single entry
  const ls=nodes.filter(n=>n.name!=="[…]"&&!has(n)&&aliveN(n)),cnt={};ls.forEach(n=>cnt[n.name]=(cnt[n.name]||0)+1);
  const lang=ls.map(n=>({id:n.id,label:cnt[n.name]>1&&N[n.p]?`${n.name} (${N[n.p].name})`:n.name})).sort((x,y)=>x.label.localeCompare(y.label));
@@ -379,14 +386,14 @@ VK.forEach(([k,b,s,l])=>{const el=$(s),ul=$(l),pick=li=>{VC[k].id=li.dataset.id;
  el.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const f=ul.querySelector("li[data-id]");if(f)pick(f)}};
  ul.onclick=e=>{const li=e.target.closest("li[data-id]");if(li)pick(li)}});
 document.addEventListener("click",e=>{if(!e.target.closest(".combo"))document.querySelectorAll(".vsug").forEach(u=>u.hidden=true)});
-async function vOpen(){$("#vhint").textContent=VAPI?"Vote for the languages and words you want added next.":"Demo mode: no voting server is connected, so votes are only saved in this browser.";VV=votables();VST=await vState(VV);vRender()}
+async function vOpen(){VV=votables();VST=await vState(VV);$("#vhint").textContent=VAPI&&!VST?"The voting server could not be reached right now. Please try again in a moment.":"Vote for the languages and words you want added next.";vRender()}
 $("#vt").onclick=()=>{const o=!isOpen("#vpanel");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#vpanel").classList.add("open");vOpen()}};$("#vx").onclick=()=>closeP("#vpanel");
 $("#vol").onclick=()=>{VSORT.lang*=-1;vRender()};$("#vow").onclick=()=>{VSORT.word*=-1;vRender()};
 VK.forEach(([k,b,s,l,m])=>$(b).onclick=async()=>{const item=VC[k].id;if(!item)return;$(b).disabled=true;const r=await vSend(k,item,VV);
  if(r&&r.error==="already")$(m).textContent=LOCK;else if(r&&r.error)$(m).textContent=r.error==="not_votable"?"This one was just added, so it can't be voted for any more.":"Could not reach the voting server. Try again in a moment.";
  else{$(s).value="";VC[k].id=null}
  VST=await vState(VV);vRender()});
-$("#lv").onclick=e=>{e.stopPropagation();$("#hz").classList.toggle("open")};$("#cog").onclick=e=>{e.stopPropagation();$(".rcol").classList.toggle("cogopen")};
+$("#lv").onclick=e=>{e.stopPropagation();$("#hz").classList.toggle("open")};
 document.addEventListener("click",e=>{if(!e.target.closest("#hz,#lv"))$("#hz").classList.remove("open");if(!e.target.closest(".rcol"))$(".rcol").classList.remove("cogopen")});
 // ---- theme, language ----
 const SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',MOON='<svg viewBox="0 0 24 24"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg>';

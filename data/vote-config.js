@@ -1,3 +1,3 @@
-// Voting server address (the Cloudflare Worker from server/README.txt), e.g. "https://vote.example.workers.dev".
-// Leave it empty to run the voting screen in DEMO mode: votes stay in this browser only (nothing is shared, no IP checks).
-window.VOTE_API="";
+// Voting server address (the Cloudflare Worker from server/README.txt).
+// Leave it empty to run the voting screen locally in this browser only (nothing shared, no IP checks).
+window.VOTE_API="https://europe-languages-vote.aaaaaaasssssss.workers.dev";

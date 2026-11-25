@@ -11,7 +11,10 @@ const N={};rows.forEach(([id,name,p,f])=>N[id]={id,name,p,f,kids:[]});const node
 // descendants of an extinct language are extinct (not under Indo-Iranian)
 nodes.forEach(n=>{if(n.f.includes("x")||n.name==="[…]")return;let t=N[n.p],ir=false,dead=false;while(t){if(t.name==="Indo-Iranian")ir=true;if(t.f.includes("x"))dead=true;t=N[t.p]}if(dead&&!ir)n.f+="x"});
 const memo={},has=n=>memo[n.id]!==undefined?memo[n.id]:(memo[n.id]=((ctx.AREAS[n.id]||[]).length>0)||n.kids.some(has));
-const alive=n=>!n.f.includes("x")&&(!n.kids.length||n.kids.every(k=>k.name==="[…]")||n.kids.some(k=>k.name!=="[…]"&&alive(k)));
+const inIr=n=>{while(n){if(n.name==="Indo-Iranian")return true;n=N[n.p]}return false};
+const up=n=>{n.kids.forEach(up);if(n.f.includes("x")||n.name==="[…]"||n.f.includes("L")||n.f.includes("D")||!n.kids.length||inIr(n)||n.kids.some(k=>k.name==="[…]"))return;if(n.kids.every(k=>k.f.includes("x")))n.f+="x"};
+nodes.filter(n=>!N[n.p]).forEach(up);   // a category with only extinct languages below it is extinct
+const alive=n=>!n.f.includes("x")&&(!n.kids.length||n.kids.some(k=>k.name==="[…]")||n.kids.some(alive));
 const lang=nodes.filter(n=>n.name!=="[…]"&&!has(n)&&alive(n)).map(n=>n.id);
 const word=[];for(const s of ctx.WORDS.sections)for(const nm of s.words.split(",").map(x=>x.trim()).filter(Boolean)){const id=s.id+"/"+nm.toLowerCase().replace(/[^a-z0-9]+/g,"-"),d=(ctx.WORDDATA||{})[id];if(!d||!(d.entries||[]).some(e=>N[e[0]]))word.push(id)}
 fs.writeFileSync(path.join(root,"data","votable.json"),JSON.stringify({lang,word}));console.log("votable: "+lang.length+" languages, "+word.length+" words");

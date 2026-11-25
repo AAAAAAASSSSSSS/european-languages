@@ -133,3 +133,12 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
  #vbody{display:block;overflow:auto}.vcol{border-right:0;border-bottom:1px solid var(--ln);padding:8px 10px}.vnote{margin-top:12px!important}
  #hleg{bottom:56px}#hleg i{width:110px}
 }
+
+/* ---- round 7 ---- */
+.tb.cur{outline:4px solid var(--ac)!important;outline-offset:3px}
+#cx{margin-left:auto}
+@media(max-width:700px){
+ .rcol .row{display:flex!important;position:static!important;flex-direction:row!important;background:none!important;border:0!important;padding:0!important}
+ #cm{order:1}#cx{order:2}#chint{order:3;flex-basis:100%}
+}
+#tec{display:flex;gap:8px}
