@@ -329,7 +329,7 @@ window.EDITS2={
 "kozy1238": "Kozymodemyan/Hill Mari",
 "yara1249": "Yaran/Northwestern Mari"
 },
-"parent": {},
+"parent": {"east2323":"gael-n"},
 "flags": {
 "celt1248": "B",
 "goid1240": "",

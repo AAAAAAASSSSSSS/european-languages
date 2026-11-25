@@ -6,6 +6,8 @@ const RB={};ROWS.forEach(t=>RB[t[0]]=t);
 Object.entries(ED.rename||{}).forEach(([id,v])=>RB[id]&&(RB[id][1]=v));Object.entries(ED.parent||{}).forEach(([id,v])=>RB[id]&&(RB[id][2]=v));Object.entries(ED.note||{}).forEach(([id,v])=>RB[id]&&(RB[id][4]=v));Object.entries(ED.flags||{}).forEach(([id,v])=>RB[id]&&(RB[id][3]=v));
 const F0=(n,c)=>n.f.includes(c);const N={};ROWS.forEach(([id,name,p,f,note,code],i)=>N[id]={id,name,p,f,note,code,i,kids:[]});
 const nodes=Object.values(N);nodes.forEach(n=>N[n.p]&&N[n.p].kids.push(n));
+const COLL=new Intl.Collator("en",{sensitivity:"base",numeric:true}),cmpN=(x,y)=>(x.name==="[…]")-(y.name==="[…]")||COLL.compare(x.name,y.name);   // the tree is always alphabetical, […] last
+nodes.forEach(n=>n.kids.sort(cmpN));const ROOTS=nodes.filter(n=>!N[n.p]).sort(cmpN);
 // whatever descends from an extinct language is extinct too (Indo-Iranian is left as it is); a revived language is un-flagged in edits.js
 nodes.forEach(n=>{if(F0(n,"x")||n.name==="[…]")return;let t=N[n.p],ir=false,dead=false;while(t){if(t.name==="Indo-Iranian")ir=true;if(F0(t,"x"))dead=true;t=N[t.p]}if(dead&&!ir)n.f+="x"});
 const F=(n,c)=>n.f.includes(c), anc=n=>{const a=[];while(N[n.p]){n=N[n.p];a.push(n)}return a};
@@ -34,7 +36,7 @@ function labelOf(po){let r=LB.get(po);if(r)return r;const ring=po[0],b=bb(ring);
   xs.sort((p,q)=>p-q);for(let i=0;i+1<xs.length;i+=2)if(xs[i+1]-xs[i]>best.w)best={w:xs[i+1]-xs[i],lat:cy,lng:(xs[i]+xs[i+1])/2}}
  return LB.set(po,r={...best,area:(b[2]-b[0])*(b[3]-b[1])}),r}
 // ---- state ----
-let E=new Set(),S=null,MODE="street",HZ="F",LASTH="F",W=null,WSEL=null,items=[];
+let HINT1=false,HINT2=false,PEND2=false;const hint2=()=>{if(HINT2){$("#box").hidden=true;return}HINT2=true;showBox('<p class="mu">Word mode: each shape carries its word, shapes of one cluster share a colour, and the thick outline carries the oldest known root. A place with two words is striped.</p>')};let E=new Set(),S=null,MODE="street",HZ="F",LASTH="F",W=null,WSEL=null,items=[];
 const dark=()=>H.dataset.theme==="dark";
 const col=n=>`hsl(${(n.i*137.508)%360},${dark()?66:60}%,${dark()?62:40}%)`;
 // cluster colours: red, blue, green, yellow, orange, then more (no black / white)
@@ -126,8 +128,8 @@ function dispPart(n,po){const d=DISPP[n.id];if(!d)return false;const l=labelOf(p
 // a click selects the place under the pointer; where several languages or dialects meet there, none is selected and the box offers each of them
 function clickAt(ll){const hit=new Set();HIT.forEach(h=>{if(inPoly(ll,h.po))h.ids.forEach(id=>hit.add(id))});const ids=[...hit].sort(byName);
  if(ids.length>1)openMix(ids);else if(ids.length)pick(ids[0])}
-function draw(){layer.clearLayers();items=[];HIT=[];render(W?wtiles():ptiles());drawLabels()}
-function openMix(ids){S=null;draw();tree();showBox(`<div class="mixbox">${ids.map(id=>`<button class="mx" data-id="${id}">${esc(N[id].name)}</button>`).join("")}</div>`,true)}
+function draw(){layer.clearLayers();items=[];HIT=[];if(HM)renderHeat();else render(W?wtiles():ptiles());drawLabels()}
+function openMix(ids){S=null;if(!HM)draw();tree();showBox(`<div class="mixbox">${ids.map(id=>`<button class="mx" data-id="${id}">${esc(N[id].name)}</button>`).join("")}</div>`,true)}
 function drawLabels(){labels.clearLayers();const ppd=256*Math.pow(2,map.getZoom())/360;let selShown=0;
  items.slice().reverse().forEach(it=>{const l=labelOf(it.po),px=l.w*ppd*Math.cos(l.lat*Math.PI/180);let fs=Math.min(34,px/(it.txt.length*.56));
   if(it.sel&&selShown<12){selShown++;fs=Math.max(fs,10)}else if(fs<9)return;
@@ -136,9 +138,9 @@ map.on("zoomend",drawLabels);
 function fitTo(mps){const pts=mps.flatMap(mp=>mp.flatMap(po=>po[0]));if(pts.length)map.fitBounds(L.latLngBounds(pts),{maxZoom:9,padding:[60,60]})}
 function fly(n){const s=shape(n);if(s)fitTo([s])}
 const drop=n=>{E.delete(n.id);n.kids.forEach(drop)};
-function pick(id){S=id;draw();box();fly(N[id]);tree()}            // select only, never breaks
+function pick(id){S=id;if(HM){box();tree();return}draw();box();fly(N[id]);tree()}            // select only, never breaks
 function go(id){const n=N[id];if(!n||n.name==="[…]")return;anc(n).forEach(a=>OPN.add(a.id));
- if(!has(n)){S=id;draw();box();tree();return}
+ if(!has(n)||HM){S=id;if(!HM)draw();box();tree();return}   // with a heat map on, pages open but the map stays as drawn
  anc(n).forEach(a=>E.add(a.id));drop(n);S=id;draw();box();fly(n);tree()} // breaks parents, rejoins when an ancestor is clicked
 window.go=go;
 // ---- info box ----
@@ -158,14 +160,14 @@ document.addEventListener("click",e=>{const el=e.target.closest&&e.target.closes
  if(lastPT==="touch"&&el&&tipFor!==el){e.preventDefault();showTip(el);return}if(!el||el!==tipFor)hideTip()},true);
 const NOTE="Borders are approximations. Where areas overlap, the less widely spoken language or dialect takes priority over the more widespread one.";
 function showBox(html,bare){hideTip();const b=$("#box");b.hidden=false;b.innerHTML=html+(bare?"":`<p class="mu note">${NOTE}</p>`)+`<button id="bxc">Close</button>`;$("#bxc").onclick=closeBox}
-function closeBox(){$("#box").hidden=true;if(S){S=null;draw();tree()}}
+function closeBox(){$("#box").hidden=true;if(S){S=null;if(!HM)draw();tree()}}
 const hostOf=u=>{try{return new URL(u).hostname}catch(e){return u}};
 const defTip=u=>{try{const x=new URL(u),t=decodeURIComponent(x.pathname.split("/").pop()).replace(/_/g," ");return x.hostname.includes("wikipedia")?`Wikipedia (${x.hostname.split(".")[0]}): ${t}`:x.hostname.includes("glottolog")?`Glottolog: ${t}`:`${x.hostname}: ${t}`}catch(e){return u}};
 // every link in the box is a letter in brackets: [a], [b], [c] ... in order of appearance; the hover holds the explanation
 // a place has both dotted (dispersed) and full polygons somewhere inside it
 const MD=new Map();
-function mixedDisp(n){if(MD.has(n.id))return MD.get(n.id);let dot=false,full=false;
- const walk=x=>{const own=P(x.id);if(own.length){const d=DISPP[x.id]||[];own.forEach((q,k)=>{if(disp(x)||d.includes(k))dot=true;else full=true})}x.kids.forEach(walk)};walk(n);
+function mixedDisp(n){if(MD.has(n.id))return MD.get(n.id);let dot=false,full=false;const d=DISPP[n.id]||[];
+ P(n.id).forEach((q,k)=>{if(disp(n)||d.includes(k))dot=true;else full=true});   // only this very place's own polygons count, never its parents
  const r=dot&&full;MD.set(n.id,r);return r}
 function box(){const n=N[S];if(!n||n.name==="[…]")return;const up=N[n.p],bd=[],gc=F(n,"p")&&!n.code?null:gcode(n),inf=INFO[n.id]||{},K=[];
  const ref=(u,t)=>{const l=String.fromCharCode(97+K.length);K.push({l,u,t});return refA(l,u,t)};
@@ -194,7 +196,7 @@ function prune(){const keep=new Set(),walk=n=>{if(E.has(n.id)&&(!N[n.p]||keep.ha
 const hasB=new Set();nodes.filter(n=>F(n,"B")).forEach(n=>anc(n).forEach(x=>hasB.add(x.id)));
 function setH(m,b){E=new Set();nodes.forEach(n=>{if(!exp(n))return;
  if(m==="B"?hasB.has(n.id)||(!n.p&&!F(n,"L")):m==="L"?!F(n,"L")&&!F(n,"D"):m==="D")E.add(n.id)});prune();
- HZ=m;LASTH=m;S=null;draw();showBox('<p class="mu">Click a shape to open it. Click one of its descendants in this box to break it up; click its ancestor to join it again.</p>');
+ HZ=m;LASTH=m;S=null;draw();if(!HINT1){HINT1=true;showBox('<p class="mu">Click a shape to open it. Click one of its descendants in this box to break it up; click its ancestor to join it again.</p>')}else $("#box").hidden=true;$("#hz").classList.remove("open");
  document.querySelectorAll("#hz button").forEach(x=>x.classList.toggle("on",x===b));tree()}
 [["Families","F"],["Branches","B"],["Languages","L"],["Dialects","D"]].forEach(([t,m],i)=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>setH(m,b);HB[m]=b;$("#hz").append(b);if(!i)b.classList.add("on")});
 // ---- panels: only one open at a time ----
@@ -208,7 +210,7 @@ function build(){const its=[];let row=0,md=0;
   if(ph){it.y=row++*RH;return it}
   if(n.kids.length){if(OPN.has(n.id))n.kids.forEach(k=>it.kids.push(rec(k,d+1,it)));else it.kids.push(rec(n,d+1,it,true))}
   it.y=it.kids.length?(it.kids[0].y+it.kids.at(-1).y)/2:row++*RH;return it};
- nodes.filter(n=>!N[n.p]).forEach(r=>{rec(r,0,null);row++});
+ ROOTS.forEach(r=>{rec(r,0,null);row++});
  its.forEach(it=>it.x=it.d*CW);TP={its,w:(md+1)*CW+20,h:row*RH+20}}
 function tree(center){hideTip();const t=$("#tree");if(!t.classList.contains("open"))return;
  const sel=N[S];if(center&&sel)anc(sel).forEach(a=>OPN.add(a.id));
@@ -243,14 +245,17 @@ addEventListener("pointermove",e=>{if(dr){tw.scrollLeft=dr.l-(e.clientX-dr.x);tw
 const WD=window.WORDDATA||{};const NA=" (N/A)";
 const SECS=(window.WORDS?WORDS.sections:[]).map(s=>({id:s.id,name:s.name,ordered:!!s.ordered,words:s.words.split(",").map(x=>x.trim()).filter(Boolean).map(nm=>{const id=s.id+"/"+nm.toLowerCase().replace(/[^a-z0-9]+/g,"-"),d=WD[id]||{};return{id,name:nm,sec:s.id,na:!((d.entries||[]).some(e=>N[e[0]])),clusters:d.clusters||{},entries:d.entries||[]}})})).map(s=>(s.ordered||s.words.sort((x,y)=>x.name.localeCompare(y.name)),s)).sort((x,y)=>x.name.localeCompare(y.name));
 let curSec=null;
-function renderSecs(){const q=$("#wq").value.trim().toLowerCase();
- $("#wsec").innerHTML=q?(SECS.flatMap(s=>s.words.filter(w=>w.name.toLowerCase().includes(q)).map(w=>`<button data-w="${w.id}">${esc(w.name)}${w.na?NA:""} <small class="mu">${esc(s.name)}</small></button>`)).join("")||'<span class="mu">No word matches.</span>'):SECS.map(s=>`<button data-s="${s.id}" class="${curSec&&curSec.id===s.id?"on":""}">${esc(s.name)}${s.words.every(w=>w.na)?NA:""}</button>`).join("")||'<span class="mu">No sections yet.</span>';
- const sl=$("#wsl");sl.innerHTML=curSec?`<option value="">Choose a word…</option>`+curSec.words.map(w=>`<option value="${w.id}" ${W&&W.w===w?"selected":""}>${esc(w.name)}${w.na?NA:""}</option>`).join(""):`<option value="">Choose a section on the left</option>`;sl.disabled=!curSec}
+let HAVE=new Set();
+function haveWords(){HAVE=new Set();const n=N[S];if(!n)return;const ids=new Set([n.id,...anc(n).map(x=>x.id)]);SECS.forEach(s=>s.words.forEach(w=>{if(w.entries.some(e=>ids.has(e[0])))HAVE.add(w.id)}));
+ $("#wh").textContent=HAVE.size?`● marks what exists in ${n.name}.`:"The map behind this page shows the selected word."}
+function renderSecs(){haveWords();const q=$("#wq").value.trim().toLowerCase();
+ $("#wsec").innerHTML=q?(SECS.flatMap(s=>s.words.filter(w=>w.name.toLowerCase().includes(q)).map(w=>`<button data-w="${w.id}">${HAVE.has(w.id)?"● ":""}${esc(w.name)}${w.na?NA:""} <small class="mu">${esc(s.name)}</small></button>`)).join("")||'<span class="mu">No word matches.</span>'):SECS.map(s=>`<button data-s="${s.id}" class="${curSec&&curSec.id===s.id?"on":""} ${s.words.some(w=>HAVE.has(w.id))?"has":""}">${s.words.some(w=>HAVE.has(w.id))?"● ":""}${esc(s.name)}${s.words.every(w=>w.na)?NA:""}</button>`).join("")||'<span class="mu">No sections yet.</span>';
+ const sl=$("#wsl");sl.innerHTML=curSec?`<option value="">Choose a word…</option>`+curSec.words.map(w=>`<option value="${w.id}" ${W&&W.w===w?"selected":""}>${HAVE.has(w.id)?"● ":""}${esc(w.name)}${w.na?NA:""}</option>`).join(""):`<option value="">Choose a section on the left</option>`;sl.disabled=!curSec}
 $("#wq").oninput=renderSecs;
 $("#wsec").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.w){const w=SECS.flatMap(s=>s.words).find(x=>x.id===b.dataset.w);curSec=SECS.find(s=>s.id===w.sec);return setWord(curSec,w)}curSec=SECS.find(s=>s.id===b.dataset.s);renderSecs();if(!W||W.sec!==curSec)renderPage()};
 $("#wsl").onchange=e=>{const w=curSec&&curSec.words.find(x=>x.id===e.target.value);if(w)setWord(curSec,w)};
-$("#wd").onclick=()=>{const o=!isOpen("#words");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#words").classList.add("open");renderSecs();renderPage()}};$("#wx").onclick=()=>closeP("#words");
-function setWord(sec,w){const ents=new Map(),all=[];
+$("#wd").onclick=()=>{const o=!isOpen("#words");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#words").classList.add("open");renderSecs();renderPage()}};$("#wx").onclick=()=>{closeP("#words");if(PEND2&&W){PEND2=false;hint2()}};
+function setWord(sec,w){if(HM)resetHeat(true);const ents=new Map(),all=[];
  w.entries.forEach(([id,form,key,chain,bor,src])=>{if(!N[id])return;const e={id,form,key,chain,bor,src,uid:all.length};all.push(e);if(!ents.has(id))ents.set(id,[]);ents.get(id).push(e)});
  const g={};all.forEach(e=>(g[e.key]=g[e.key]||[]).push(e));
  const cls=Object.entries(g).map(([key,es])=>{es.sort((x,y)=>byName(x.id,y.id)||x.form.localeCompare(y.form));return{key,es,ids:[...new Set(es.map(e=>e.id))].sort(byName),root:w.clusters[key]||{lang:"?",form:""}}});
@@ -258,7 +263,7 @@ function setWord(sec,w){const ents=new Map(),all=[];
  cls.forEach((c,i)=>{c.i=i;c.color=PAL(i);const used={};c.es.forEach(e=>{used[e.id]=used[e.id]||0;e.color=shade(c.color,used[e.id]++)})});  // two words of one cluster in one place = two shades of its colour
  W={sec,w,ents,all,cls};WSEL=null;HZ=null;E=new Set();S=null;computeWS();
  document.querySelectorAll("#hz button").forEach(x=>x.classList.remove("on"));$("#rs").hidden=false;$("#wd").classList.add("on");
- draw();fitTo([...W.ws.values()]);showBox('<p class="mu">Word mode: each shape carries its word, shapes of one cluster share a colour, and the thick outline carries the oldest known root. A place with two words is striped.</p>');
+ draw();fitTo([...W.ws.values()]);if(isOpen("#words"))PEND2=!HINT2;else hint2();
  renderSecs();renderPage();tree()}
 function noData(){const out=[],walk=n=>{if(!has(n)||W.ents.has(n.id))return;
  if(!W.entAnc.has(n.id)&&(F(n,"L")||F(n,"D"))){out.push(n.name);return}n.kids.forEach(walk)};
@@ -281,6 +286,22 @@ const LNG=[...new Set(WK.flatMap(m=>[...m.keys()]))].sort(byName);
 const sim=(a,b)=>{let n=0,s=0;WK.forEach(m=>{if(m.has(a)&&m.has(b)){n++;if([...m.get(a)].some(k=>m.get(b).has(k)))s++}});return{n,s,v:n?s/n:null}};
 const fmt=v=>String(Number(v.toFixed(3)));
 let CM="i";
+// ---- distance heat map: every language that shares words with the chosen one, deep blue (0) to bright red (1) ----
+let HM=null;   // {from, tiles:[{n,mp,v}]}
+const HC=[[0,[11,31,168]],[.33,[24,196,232]],[.66,[255,224,51]],[1,[255,20,20]]];
+const heatCol=v=>{v=Math.max(0,Math.min(1,v));let i=0;while(i<HC.length-2&&v>HC[i+1][0])i++;const[x0,c0]=HC[i],[x1,c1]=HC[i+1],t=(v-x0)/(x1-x0);return"rgb("+c0.map((c,k)=>Math.round(c+(c1[k]-c)*t)).join(",")+")"};
+function heatTiles(from){const T=[];LNG.forEach(id=>{const r=id===from?{v:1}:sim(from,id);if(r.v===null)return;const n=N[id],base=shape(n);if(!base)return;
+  const cut=LNG.filter(o=>o!==id&&anc(N[o]).includes(n)).map(o=>shape(N[o])).filter(Boolean).map(s=>s.map(toGJ));
+  let mp=base;if(cut.length){const d=safe(PC.difference,base.map(toGJ),...cut);mp=d?fromGJ(d):base}
+  if(mp&&mp.length)T.push({n,mp,v:r.v})});return T}
+function renderHeat(){HM.tiles.forEach(t=>{const c=heatCol(t.v),me=t.n.id===HM.from;t.mp.forEach(po=>{
+  L.polygon(po,{color:me?"#111":c,fillColor:c,weight:me?3:1.5,opacity:.95,fillOpacity:.72}).addTo(layer).bindTooltip(`${t.n.name}: ${fmt(t.v)}`,{sticky:true}).on("click",e=>clickAt(e.latlng));
+  HIT.push({ids:[t.n.id],po});items.push({po,txt:t.n.name,sub:fmt(t.v),sel:t.n.id===S})})})}
+const lockLevels=b=>document.querySelectorAll("#hz button,#lv").forEach(x=>x.disabled=b);
+function setHeat(id){if(W){W=null;WSEL=null;$("#rs").hidden=true;$("#wd").classList.remove("on");renderSecs();renderPage()}
+ HM={from:id,tiles:heatTiles(id)};S=null;$("#box").hidden=true;$("#rs2").hidden=false;$("#cl").classList.add("on");$("#hleg").hidden=false;lockLevels(true);draw();fitTo(HM.tiles.map(t=>t.mp));tree()}
+function resetHeat(quiet){HM=null;$("#rs2").hidden=true;$("#cl").classList.remove("on");$("#hleg").hidden=true;lockLevels(false);if(!quiet)setH(LASTH,HB[LASTH])}
+$("#rs2").onclick=()=>resetHeat();
 function renderC(){document.querySelectorAll("#cm button").forEach(b=>b.classList.toggle("on",b.dataset.m===CM));const c=$("#cbody");
  if(LNG.length<2){c.innerHTML='<p class="mu">There are not yet two languages with words, so there is nothing to compare.</p>';$("#chint").textContent="";return}
  if(CM==="i"){$("#chint").textContent="distance = shared roots / words both languages have";
@@ -290,6 +311,9 @@ function renderC(){document.querySelectorAll("#cm button").forEach(b=>b.classLis
    LNG.filter(b=>b!==a).forEach(b=>{const r=sim(a,b);if(r.v===null)none.push(N[b].name);else(g[fmt(r.v)]=g[fmt(r.v)]||[]).push(N[b].name)});
    $("#cr").innerHTML=Object.keys(g).sort((x,y)=>y-x).map(v=>`<p>${g[v].sort((x,y)=>x.localeCompare(y)).map(esc).join(", ")}: <b>${v}</b></p>`).join("")+(none.length?`<p class="mu">No shared words: ${none.sort((x,y)=>x.localeCompare(y)).map(esc).join(", ")}</p>`:"")};
   $("#ci").onchange=run;run()}
+ else if(CM==="h"){$("#chint").textContent="pick a language: the map is coloured by distance to it, deep blue = 0, bright red = 1";
+  c.innerHTML=`<label>Draw the map from <select id="ch"><option value="">Choose a language…</option>${LNG.map(id=>`<option value="${id}" ${HM&&HM.from===id?"selected":""}>${esc(N[id].name)}</option>`).join("")}</select></label>`;
+  $("#ch").onchange=e=>{if(e.target.value){closeP("#cpanel");setHeat(e.target.value)}}}
  else{$("#chint").textContent="languages joined by average distance (UPGMA); a language meets its closest relatives first";c.innerHTML=`<div id="cwheel">${wheel()}</div>`}}
 function upgma(ids){const n=ids.length,d=[];for(let i=0;i<n;i++){d.push([]);for(let j=0;j<n;j++){const r=i===j?{v:1}:sim(ids[i],ids[j]);d[i][j]=r.v===null?1:1-r.v}}
  const T=ids.map((id,i)=>({id,sz:1,h:0,kids:[]}));let act=ids.map((_,i)=>i);
@@ -311,7 +335,7 @@ function wheel(){const root=upgma(LNG),leaves=[],walk=n=>n.kids.length?n.kids.fo
   nd.kids.forEach(k=>{const [xa,ya]=pt(nd.r,k.a),[xb,yb]=pt(k.r,k.a);out+=`<path d="M${f(xa)} ${f(ya)}L${f(xb)} ${f(yb)}" stroke="${k.gc==null?"var(--mu)":PAL(k.gc)}" stroke-width="1.6"/>`;draw1(k)})};
  draw1(root);
  leaves.forEach(l=>{const [x,y]=pt(R+6,l.a),deg=l.a*180/Math.PI-90,fl=l.a>Math.PI;
-  out+=`<text transform="translate(${f(x)} ${f(y)}) rotate(${f(fl?deg+180:deg)})" text-anchor="${fl?"end":"start"}" dominant-baseline="middle" ${l.gc==null?"":`style="fill:${PAL(l.gc)}"`}>${esc(N[l.id].name)}<title>${esc(N[l.id].name)}</title></text>`});
+  const me=l.id===S;out+=`<text transform="translate(${f(x)} ${f(y)}) rotate(${f(fl?deg+180:deg)})" text-anchor="${fl?"end":"start"}" dominant-baseline="middle" ${me?`style="fill:#e0182d;font-weight:700;font-size:14px;text-decoration:underline"`:l.gc==null?"":`style="fill:${PAL(l.gc)}"`}>${me?"● ":""}${esc(N[l.id].name)}<title>${esc(N[l.id].name)}</title></text>`});
  return`<svg width="${2*Z}" height="${2*Z}" viewBox="0 0 ${2*Z} ${2*Z}" role="img" aria-label="Wheel of language distances">${out}</svg>`}
 $("#box").addEventListener("click",e=>{const b=e.target.closest(".mx");if(b)go(b.dataset.id)});
 $("#cl").onclick=()=>{const o=!isOpen("#cpanel");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#cpanel").classList.add("open");renderC()}};
@@ -349,22 +373,24 @@ function vRender(){if(!VV)return;const lab={lang:Object.fromEntries(VV.lang.map(
   $(id).innerHTML=rows.map(r=>`<li><span class="n">${r.n}</span>${esc(lab[k][r.item])}</li>`).join("")||'<li class="mu">No votes yet.</li>';$(btn).innerHTML=`<i class="tri ${VSORT[k]<0?"dn":"up"}"></i>`})}
 // the picker is a search box: nothing is listed until something is typed, then every entry that contains those letters in that order
 VK.forEach(([k,b,s,l])=>{const el=$(s),ul=$(l),pick=li=>{VC[k].id=li.dataset.id;el.value=li.textContent;ul.hidden=true;vBtns()};
- el.oninput=()=>{VC[k].id=null;vBtns();const q=normQ(el.value.trim());if(!q){ul.innerHTML="";ul.hidden=true;return}
-  const m=VC[k].items.filter(x=>normQ(x.label).includes(q)).slice(0,300);ul.innerHTML=m.map(x=>`<li data-id="${esc(x.id)}">${esc(x.label)}</li>`).join("")||'<li class="none">No match</li>';ul.hidden=false};
+ const fill=()=>{const q=normQ(el.value.trim()),m=VC[k].items.filter(x=>!q||normQ(x.label).includes(q));   // click = the whole list, typing narrows it to entries containing those letters in that order
+  ul.innerHTML=m.map(x=>`<li data-id="${esc(x.id)}">${esc(x.label)}</li>`).join("")||'<li class="none">No match</li>';ul.hidden=false};
+ el.oninput=()=>{VC[k].id=null;vBtns();fill()};el.onfocus=el.onclick=()=>{if(!el.disabled)fill()};
  el.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const f=ul.querySelector("li[data-id]");if(f)pick(f)}};
  ul.onclick=e=>{const li=e.target.closest("li[data-id]");if(li)pick(li)}});
 document.addEventListener("click",e=>{if(!e.target.closest(".combo"))document.querySelectorAll(".vsug").forEach(u=>u.hidden=true)});
-async function vOpen(){VV=votables();VST=await vState(VV);vRender()}
+async function vOpen(){$("#vhint").textContent=VAPI?"Vote for the languages and words you want added next.":"Demo mode: no voting server is connected, so votes are only saved in this browser.";VV=votables();VST=await vState(VV);vRender()}
 $("#vt").onclick=()=>{const o=!isOpen("#vpanel");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#vpanel").classList.add("open");vOpen()}};$("#vx").onclick=()=>closeP("#vpanel");
 $("#vol").onclick=()=>{VSORT.lang*=-1;vRender()};$("#vow").onclick=()=>{VSORT.word*=-1;vRender()};
 VK.forEach(([k,b,s,l,m])=>$(b).onclick=async()=>{const item=VC[k].id;if(!item)return;$(b).disabled=true;const r=await vSend(k,item,VV);
  if(r&&r.error==="already")$(m).textContent=LOCK;else if(r&&r.error)$(m).textContent=r.error==="not_votable"?"This one was just added, so it can't be voted for any more.":"Could not reach the voting server. Try again in a moment.";
  else{$(s).value="";VC[k].id=null}
  VST=await vState(VV);vRender()});
+$("#lv").onclick=e=>{e.stopPropagation();$("#hz").classList.toggle("open")};$("#cog").onclick=e=>{e.stopPropagation();$(".rcol").classList.toggle("cogopen")};
+document.addEventListener("click",e=>{if(!e.target.closest("#hz,#lv"))$("#hz").classList.remove("open");if(!e.target.closest(".rcol"))$(".rcol").classList.remove("cogopen")});
 // ---- theme, language ----
 const SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',MOON='<svg viewBox="0 0 24 24"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg>';
 function theme(t){H.dataset.theme=t;$("#th").innerHTML=t==="dark"?SUN:MOON;$("#th").title=t==="dark"?"Light mode":"Dark mode";drawBase();tiles();draw();tree()}
 $("#th").onclick=()=>theme(dark()?"light":"dark");const GL='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>';$("#mp").innerHTML=GL;$("#mp").onclick=()=>{MODE=MODE==="sat"?"street":"sat";tiles()};
-$("#lg").onclick=()=>{const m=$("#lgm");m.style.display=m.style.display==="block"?"none":"block"};
 theme(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");setH("F",HB.F);
 })();
