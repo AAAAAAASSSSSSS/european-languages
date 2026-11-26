@@ -148,6 +148,8 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
  #cm{order:1}#cx{order:2}#chint{order:3;flex-basis:100%}
 }
 #tec{display:flex;gap:8px}
+
+#box .note a{color:var(--ac)}
 </style>
 </head>
 <body>
@@ -158,7 +160,7 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
  <div class="rcol"><div class="row"> <button id="mp" class="ic" aria-label="Map type" title="Street / satellite"></button><button id="th" class="ic" aria-label="Switch colour mode"></button></div><button id="vt">Vote</button></div>
 </div>
 <aside id="box"></aside><div id="hleg" hidden><span>0</span><i></i><span>1</span></div>
-<aside id="about" role="dialog" aria-label="About this project"><button id="ax" aria-label="Close">×</button><p><b>Beta version.</b> This project is in beta. Its data is not yet factual and must not be used.</p><p>For questions, reports or anything else, <span class="nw">please write to <a href="mailto:aaaaaaasssssss@protonmail.com">aaaaaaasssssss@protonmail.com</a>.</span></p></aside>
+<aside id="about" role="dialog" aria-label="About this project"><button id="ax" aria-label="Close">×</button><p><b>Beta version.</b> This project is in beta. Its data is not yet factual and must not be used.</p><p>For questions, reports or anything else, <span class="nw">please write to <a href="mailto:aaaaaaasssssss@protonmail.com">aaaaaaasssssss@protonmail.com</a>.</span></p><p>For information outside Europe, see <a href="https://languagemap.net/" target="_blank" rel="noopener">languagemap.net</a>.</p></aside>
 <section id="tree" class="pnl" aria-label="Language tree"><header><input id="tq" type="search" placeholder="Search the language tree"><div id="tnav"><button id="tup" aria-label="Previous match" title="Previous match"><i class="tri up"></i></button><button id="tdn" aria-label="Next match" title="Next match"><i class="tri dn"></i></button></div><span id="tcnt" class="cnt" aria-live="polite">0/0</span><div id="tec"><button id="te" title="Open every branch">Expand all</button><button id="tf" title="Close every branch">Collapse all</button></div><button id="tx">Close</button></header><div id="tw"><div id="tc"></div></div></section>
 <section id="words" class="pnl" aria-label="Words"><header><b>Words</b><span class="mu" id="wh">The map behind this page shows the selected word.</span><button id="wx">Close</button></header>
  <div id="wb"><div id="wleft"><input id="wq" type="search" placeholder="Search words" aria-label="Search words"><nav id="wsec" aria-label="Sections"></nav></div><div id="wmain"><div id="wsel"><select id="wsl" aria-label="Word"></select></div><div id="wcols"><div id="wcl"></div><div id="wet"></div></div></div></div></section>
@@ -167,10 +169,10 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
  <div id="vbody">
   <div class="vcol" id="vin"><h3>Language, branch, family or dialect</h3><div class="combo"><input id="vls" type="search" placeholder="Type to search…" autocomplete="off" aria-label="Language to vote for"><ul class="vsug" id="vlsl" hidden></ul></div><button id="vsl">Submit</button><p class="mu vmsg" id="vml"></p>
    <h3>Word</h3><div class="combo"><input id="vws" type="search" placeholder="Type to search…" autocomplete="off" aria-label="Word to vote for"><ul class="vsug" id="vwsl" hidden></ul></div><button id="vsw">Submit</button><p class="mu vmsg" id="vmw"></p><p class="mu vnote">Can’t find a word you’d like to see here? Write to me at <a href="mailto:aaaaaaasssssss@protonmail.com">aaaaaaasssssss@protonmail.com</a> and I’ll add it to the voting section.</p></div>
-  <div class="vcol"><h3>Latest languages</h3><ol class="vlist" id="vrl"></ol></div>
-  <div class="vcol"><h3>Latest words</h3><ol class="vlist" id="vrw"></ol></div>
-  <div class="vcol"><h3>Languages <button class="sortb" id="vol" aria-label="Sort order" title="Descending / ascending"><i class="tri dn"></i></button></h3><ul class="vlist" id="vtl"></ul></div>
-  <div class="vcol"><h3>Words <button class="sortb" id="vow" aria-label="Sort order" title="Descending / ascending"><i class="tri dn"></i></button></h3><ul class="vlist" id="vtw"></ul></div>
+  <div class="vcol"><h3>Latest language votes</h3><ol class="vlist" id="vrl"></ol></div>
+  <div class="vcol"><h3>Latest word votes</h3><ol class="vlist" id="vrw"></ol></div>
+  <div class="vcol"><h3>Top wanted languages <button class="sortb" id="vol" aria-label="Sort order" title="Descending / ascending"><i class="tri dn"></i></button></h3><ul class="vlist" id="vtl"></ul></div>
+  <div class="vcol"><h3>Top wanted words <button class="sortb" id="vow" aria-label="Sort order" title="Descending / ascending"><i class="tri dn"></i></button></h3><ul class="vlist" id="vtw"></ul></div>
  </div></section>
 <script>// Voting server address (the Cloudflare Worker from server/README.txt).
 // Leave it empty to run the voting screen locally in this browser only (nothing shared, no IP checks).
@@ -1665,18 +1667,18 @@ function votables(){   // languages: alive, without any polygon of their own or 
 const demoDB={get(){try{return JSON.parse(localStorage.getItem("vote-demo")||"[]")}catch(e){return[]}},set(v){try{localStorage.setItem("vote-demo",JSON.stringify(v))}catch(e){}}};
 function demoState(V){const ok={lang:new Set(V.lang.map(x=>x.id)),word:new Set(V.word.map(x=>x.id))},all=demoDB.get().filter(v=>ok[v.kind].has(v.item)),st={recent:{},ranks:{},mine:{}};
  ["lang","word"].forEach(k=>{const r=all.filter(v=>v.kind===k),c={};r.forEach(v=>c[v.item]=(c[v.item]||0)+1);
-  st.recent[k]=r.slice(-10).reverse().map(v=>({item:v.item,ts:v.ts,place:"demo"}));st.ranks[k]=Object.entries(c).map(([item,n])=>({item,n}));st.mine[k]=r.length>0});return st}
+  st.recent[k]=r.slice(-10).reverse().map(v=>({item:v.item,ts:v.ts,place:"demo"}));st.ranks[k]=Object.entries(c).map(([item,n])=>({item,n}));st.mine[k]=r.length?r[r.length-1].item:null});return st}
 async function vState(V){if(!VAPI)return demoState(V);try{const r=await fetch(VAPI+"/state");return await r.json()}catch(e){return null}}
-async function vSend(kind,item,V){if(!VAPI){const st=demoState(V);if(st.mine[kind])return{error:"already"};const d=demoDB.get();d.push({kind,item,ts:Date.now()});demoDB.set(d);return{ok:true}}
+async function vSend(kind,item,V){if(!VAPI){const d=demoDB.get().filter(v=>v.kind!==kind);d.push({kind,item,ts:Date.now()});demoDB.set(d);return{ok:true}}
  try{const r=await fetch(VAPI+"/vote",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind,item})});return await r.json()}catch(e){return{error:"network"}}}
-const fmtTime=ts=>{const d=new Date(ts),t=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});return d.toDateString()===new Date().toDateString()?t:d.toLocaleDateString([],{day:"numeric",month:"short"})+" "+t};
+const fmtTime=ts=>{const d=new Date(ts);return d.toLocaleDateString([],{day:"numeric",month:"short",year:"numeric"})+", "+d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};   // visitor's own local date and time
 const fmtPlace=p=>{if(!p)return"";if(p==="demo")return"demo mode";const[c,r]=p.split("|");let n=c;try{n=new Intl.DisplayNames([navigator.language||"en"],{type:"region"}).of(c)||c}catch(e){}return r?`${n}, ${r}`:n};
 let VV=null,VST=null;const VSORT={lang:-1,word:-1};   // -1 = descending (triangle points down)
-const LOCK="You have already voted for this section. Wait until it is added to vote again.";
+const AGAIN="If you vote again, your new vote replaces your old one.";
 const VC={lang:{items:[],id:null},word:{items:[],id:null}};
 const normQ=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 const VK=[["lang","#vsl","#vls","#vlsl","#vml"],["word","#vsw","#vws","#vwsl","#vmw"]];
-function vBtns(){VK.forEach(([k,b,s,l,m])=>{const lock=!!(VST&&VST.mine[k]),none=!(VV&&VV[k].length);$(b).disabled=lock||none||!VC[k].id;$(s).disabled=lock||none;$(m).textContent=lock?LOCK:none?"Nothing left to vote for here.":""})}
+function vBtns(){VK.forEach(([k,b,s,l,m])=>{const none=!(VV&&VV[k].length),cur=VST&&VST.mine&&typeof VST.mine[k]==="string"?(VV[k].find(x=>x.id===VST.mine[k])||{}).label:"";$(b).disabled=none||!VC[k].id;$(s).disabled=none;$(m).textContent=none?"Nothing left to vote for here.":(cur?`Your current vote: ${cur}. `:"")+AGAIN})}
 function vRender(){if(!VV)return;const lab={lang:Object.fromEntries(VV.lang.map(x=>[x.id,x.label])),word:Object.fromEntries(VV.word.map(x=>[x.id,x.label]))};
  VC.lang.items=VV.lang;VC.word.items=VV.word;
  const st=VST||{recent:{lang:[],word:[]},ranks:{lang:[],word:[]},mine:{lang:false,word:false}};vBtns();
@@ -1695,7 +1697,7 @@ async function vOpen(){VV=votables();VST=await vState(VV);$("#vhint").textConten
 $("#vt").onclick=()=>{const o=!isOpen("#vpanel");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#vpanel").classList.add("open");vOpen()}};$("#vx").onclick=()=>closeP("#vpanel");
 $("#vol").onclick=()=>{VSORT.lang*=-1;vRender()};$("#vow").onclick=()=>{VSORT.word*=-1;vRender()};
 VK.forEach(([k,b,s,l,m])=>$(b).onclick=async()=>{const item=VC[k].id;if(!item)return;$(b).disabled=true;const r=await vSend(k,item,VV);
- if(r&&r.error==="already")$(m).textContent=LOCK;else if(r&&r.error)$(m).textContent=r.error==="not_votable"?"This one was just added, so it can't be voted for any more.":"Could not reach the voting server. Try again in a moment.";
+ if(r&&r.error)$(m).textContent=r.error==="not_votable"?"This one was just added, so it can't be voted for any more.":"Could not reach the voting server. Try again in a moment.";
  else{$(s).value="";VC[k].id=null}
  VST=await vState(VV);vRender()});
 $("#lv").onclick=e=>{e.stopPropagation();$("#hz").classList.toggle("open")};

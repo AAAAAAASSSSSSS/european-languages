@@ -360,18 +360,18 @@ function votables(){   // languages: alive, without any polygon of their own or 
 const demoDB={get(){try{return JSON.parse(localStorage.getItem("vote-demo")||"[]")}catch(e){return[]}},set(v){try{localStorage.setItem("vote-demo",JSON.stringify(v))}catch(e){}}};
 function demoState(V){const ok={lang:new Set(V.lang.map(x=>x.id)),word:new Set(V.word.map(x=>x.id))},all=demoDB.get().filter(v=>ok[v.kind].has(v.item)),st={recent:{},ranks:{},mine:{}};
  ["lang","word"].forEach(k=>{const r=all.filter(v=>v.kind===k),c={};r.forEach(v=>c[v.item]=(c[v.item]||0)+1);
-  st.recent[k]=r.slice(-10).reverse().map(v=>({item:v.item,ts:v.ts,place:"demo"}));st.ranks[k]=Object.entries(c).map(([item,n])=>({item,n}));st.mine[k]=r.length>0});return st}
+  st.recent[k]=r.slice(-10).reverse().map(v=>({item:v.item,ts:v.ts,place:"demo"}));st.ranks[k]=Object.entries(c).map(([item,n])=>({item,n}));st.mine[k]=r.length?r[r.length-1].item:null});return st}
 async function vState(V){if(!VAPI)return demoState(V);try{const r=await fetch(VAPI+"/state");return await r.json()}catch(e){return null}}
-async function vSend(kind,item,V){if(!VAPI){const st=demoState(V);if(st.mine[kind])return{error:"already"};const d=demoDB.get();d.push({kind,item,ts:Date.now()});demoDB.set(d);return{ok:true}}
+async function vSend(kind,item,V){if(!VAPI){const d=demoDB.get().filter(v=>v.kind!==kind);d.push({kind,item,ts:Date.now()});demoDB.set(d);return{ok:true}}
  try{const r=await fetch(VAPI+"/vote",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind,item})});return await r.json()}catch(e){return{error:"network"}}}
-const fmtTime=ts=>{const d=new Date(ts),t=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});return d.toDateString()===new Date().toDateString()?t:d.toLocaleDateString([],{day:"numeric",month:"short"})+" "+t};
+const fmtTime=ts=>{const d=new Date(ts);return d.toLocaleDateString([],{day:"numeric",month:"short",year:"numeric"})+", "+d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})};   // visitor's own local date and time
 const fmtPlace=p=>{if(!p)return"";if(p==="demo")return"demo mode";const[c,r]=p.split("|");let n=c;try{n=new Intl.DisplayNames([navigator.language||"en"],{type:"region"}).of(c)||c}catch(e){}return r?`${n}, ${r}`:n};
 let VV=null,VST=null;const VSORT={lang:-1,word:-1};   // -1 = descending (triangle points down)
-const LOCK="You have already voted for this section. Wait until it is added to vote again.";
+const AGAIN="If you vote again, your new vote replaces your old one.";
 const VC={lang:{items:[],id:null},word:{items:[],id:null}};
 const normQ=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 const VK=[["lang","#vsl","#vls","#vlsl","#vml"],["word","#vsw","#vws","#vwsl","#vmw"]];
-function vBtns(){VK.forEach(([k,b,s,l,m])=>{const lock=!!(VST&&VST.mine[k]),none=!(VV&&VV[k].length);$(b).disabled=lock||none||!VC[k].id;$(s).disabled=lock||none;$(m).textContent=lock?LOCK:none?"Nothing left to vote for here.":""})}
+function vBtns(){VK.forEach(([k,b,s,l,m])=>{const none=!(VV&&VV[k].length),cur=VST&&VST.mine&&typeof VST.mine[k]==="string"?(VV[k].find(x=>x.id===VST.mine[k])||{}).label:"";$(b).disabled=none||!VC[k].id;$(s).disabled=none;$(m).textContent=none?"Nothing left to vote for here.":(cur?`Your current vote: ${cur}. `:"")+AGAIN})}
 function vRender(){if(!VV)return;const lab={lang:Object.fromEntries(VV.lang.map(x=>[x.id,x.label])),word:Object.fromEntries(VV.word.map(x=>[x.id,x.label]))};
  VC.lang.items=VV.lang;VC.word.items=VV.word;
  const st=VST||{recent:{lang:[],word:[]},ranks:{lang:[],word:[]},mine:{lang:false,word:false}};vBtns();
@@ -390,7 +390,7 @@ async function vOpen(){VV=votables();VST=await vState(VV);$("#vhint").textConten
 $("#vt").onclick=()=>{const o=!isOpen("#vpanel");panels.forEach(closeP);if(o){$("#box").hidden=true;$("#vpanel").classList.add("open");vOpen()}};$("#vx").onclick=()=>closeP("#vpanel");
 $("#vol").onclick=()=>{VSORT.lang*=-1;vRender()};$("#vow").onclick=()=>{VSORT.word*=-1;vRender()};
 VK.forEach(([k,b,s,l,m])=>$(b).onclick=async()=>{const item=VC[k].id;if(!item)return;$(b).disabled=true;const r=await vSend(k,item,VV);
- if(r&&r.error==="already")$(m).textContent=LOCK;else if(r&&r.error)$(m).textContent=r.error==="not_votable"?"This one was just added, so it can't be voted for any more.":"Could not reach the voting server. Try again in a moment.";
+ if(r&&r.error)$(m).textContent=r.error==="not_votable"?"This one was just added, so it can't be voted for any more.":"Could not reach the voting server. Try again in a moment.";
  else{$(s).value="";VC[k].id=null}
  VST=await vState(VV);vRender()});
 $("#lv").onclick=e=>{e.stopPropagation();$("#hz").classList.toggle("open")};

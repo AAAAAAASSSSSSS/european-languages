@@ -142,3 +142,5 @@ sup a{color:var(--ac);font-size:13px;text-decoration:none;padding:0 4px}.leaflet
  #cm{order:1}#cx{order:2}#chint{order:3;flex-basis:100%}
 }
 #tec{display:flex;gap:8px}
+
+#box .note a{color:var(--ac)}
